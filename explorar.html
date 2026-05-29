@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explorar Destino — Rafa & Ana</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #FAF7F2;
+      --terracotta: #C17353;
+      --olive: #6B7A5C;
+      --sea: #4A7EA5;
+      --wine: #7A2942;
+      --warm-white: #FFFEF9;
+      --text: #2C2520;
+      --text-light: #6B5E55;
+      --border: #E8DDD5;
+      --shadow: 0 2px 16px rgba(44,37,32,0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+
+    /* ── NAV ── */
+    nav {
+      background: var(--warm-white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-back {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.82rem; color: var(--text-light);
+      text-decoration: none; transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--terracotta); }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--terracotta); }
+
+    /* ── MAIN ── */
+    .main { max-width: 720px; margin: 0 auto; padding: 36px 24px 80px; }
+
+    /* ── DEST HERO ── */
+    .dest-hero {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 28px 22px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+    }
+    .dest-flag { font-size: 2.4rem; margin-bottom: 8px; display: block; }
+    .dest-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.85rem;
+      font-weight: 600;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+    .dest-tagline {
+      font-size: 0.95rem;
+      color: var(--text-light);
+      margin-bottom: 16px;
+      line-height: 1.5;
+      font-style: italic;
+    }
+    .dest-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .dest-tag {
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      color: var(--text-light);
+      background: var(--cream);
+    }
+    .dest-tag.highlight { border-color: var(--terracotta); color: var(--terracotta); background: #FEF0EA; }
+
+    /* ── EXPLORATION CARD ── */
+    .exploration-card {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .exploration-header {
+      padding: 18px 24px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .exploration-header .ai-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: var(--terracotta);
+      color: white;
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+    .exploration-header .ai-label {
+      font-size: 0.85rem;
+      color: var(--text-light);
+    }
+    .exploration-body { padding: 20px 24px 24px; }
+
+    /* Loading state */
+    .loading-state { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+    .loading-dots { display: flex; gap: 4px; }
+    .loading-dots span {
+      width: 7px; height: 7px;
+      background: var(--terracotta);
+      border-radius: 50%;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes pulse { 0%,80%,100% { opacity: 0.3; transform: scale(0.85); } 40% { opacity: 1; transform: scale(1); } }
+    .loading-text { font-size: 0.88rem; color: var(--text-light); }
+
+    /* AI response markdown */
+    .ai-response { font-size: 0.92rem; line-height: 1.7; color: var(--text); }
+    .ai-response h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 20px 0 8px;
+      color: var(--text);
+    }
+    .ai-response h2:first-child { margin-top: 0; }
+    .ai-response h3 { font-size: 0.9rem; font-weight: 600; margin: 14px 0 6px; color: var(--terracotta); }
+    .ai-response p { margin-bottom: 12px; }
+    .ai-response ul { margin: 8px 0 12px 18px; }
+    .ai-response ul li { margin-bottom: 6px; }
+    .ai-response strong { font-weight: 600; color: var(--text); }
+    .ai-response em { font-style: italic; color: var(--text-light); }
+    .ai-response hr { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+
+    /* ── CHAT ── */
+    .chat-section {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .chat-section-header {
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .chat-section-header::before { content: '💬'; font-size: 1rem; }
+    .messages-area {
+      min-height: 100px;
+      max-height: 480px;
+      overflow-y: auto;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .message { display: flex; gap: 10px; align-items: flex-start; }
+    .message.user { flex-direction: row-reverse; }
+    .msg-avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      font-size: 0.7rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .message.assistant .msg-avatar { background: var(--terracotta); color: white; }
+    .message.user .msg-avatar { background: var(--olive); color: white; }
+    .msg-bubble {
+      max-width: 78%;
+      padding: 11px 15px;
+      border-radius: 14px;
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+    .message.assistant .msg-bubble {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 14px 14px 14px 4px;
+    }
+    .message.user .msg-bubble {
+      background: var(--terracotta);
+      color: white;
+      border-radius: 14px 14px 4px 14px;
+    }
+    .msg-bubble strong { font-weight: 600; }
+
+    /* Chips de sugestão */
+    .chips-row {
+      padding: 10px 20px 4px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+    .suggest-chip {
+      font-size: 0.78rem;
+      padding: 6px 13px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--cream);
+      color: var(--text-light);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+    .suggest-chip:hover { border-color: var(--terracotta); color: var(--terracotta); }
+
+    /* Input */
+    .input-area {
+      padding: 12px 16px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    #chat-input {
+      flex: 1;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--cream);
+      color: var(--text);
+      resize: none;
+      outline: none;
+      line-height: 1.5;
+      transition: border-color 0.2s;
+      min-height: 40px;
+      max-height: 130px;
+      overflow-y: auto;
+    }
+    #chat-input:focus { border-color: var(--terracotta); background: white; }
+    #chat-input::placeholder { color: #bbb; }
+    .send-btn {
+      background: var(--terracotta);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: opacity 0.15s;
+      flex-shrink: 0;
+    }
+    .send-btn:hover { opacity: 0.85; }
+    .send-btn:disabled { opacity: 0.5; cursor: default; }
+
+    /* Typing indicator */
+    .typing-indicator { display: none; align-items: center; gap: 10px; padding: 2px 0; }
+    .typing-indicator.visible { display: flex; }
+    .typing-dots { display: flex; gap: 4px; }
+    .typing-dots span {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--text-light);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    /* Error banner */
+    .error-banner {
+      background: #FEF0EA;
+      border: 1px solid #F5C8B0;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.84rem;
+      color: #8B4020;
+      margin: 12px 20px;
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      .main { padding: 20px 14px 60px; }
+      .dest-hero { padding: 20px 18px; }
+      .dest-name { font-size: 1.5rem; }
+      .exploration-body { padding: 16px 18px 20px; }
+      .msg-bubble { max-width: 90%; }
+      .messages-area { max-height: 320px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-back" href="/descobrir">← Voltar a Descobrir</a>
+  <span class="nav-logo">Rafa & Ana</span>
+</nav>
+
+<div class="main">
+
+  <!-- DEST HERO — populated by JS -->
+  <div class="dest-hero" id="dest-hero">
+    <span class="dest-flag" id="dest-flag">✈️</span>
+    <div class="dest-name" id="dest-name">Carregando destino…</div>
+    <div class="dest-tagline" id="dest-tagline"></div>
+    <div class="dest-tags" id="dest-tags"></div>
+  </div>
+
+  <!-- EXPLORATION CARD — AI auto-generates on load -->
+  <div class="exploration-card">
+    <div class="exploration-header">
+      <span class="ai-badge">IA</span>
+      <span class="ai-label">Exploração gerada com base no perfil de vocês</span>
+    </div>
+    <div class="exploration-body" id="exploration-body">
+      <div class="loading-state" id="exploration-loading">
+        <div class="loading-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <span class="loading-text">Analisando o destino para o perfil de vocês…</span>
+      </div>
+      <div class="ai-response" id="exploration-content" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="chat-section">
+    <div class="chat-section-header">Continue a exploração</div>
+    <div class="messages-area" id="messages-area"></div>
+    <div class="chips-row" id="chips-row" style="display:none">
+      <!-- chips populated after exploration loads -->
+    </div>
+    <div class="error-banner" id="error-banner"></div>
+    <div class="input-area">
+      <textarea
+        id="chat-input"
+        placeholder="Pergunte mais sobre este destino…"
+        rows="1"
+        onkeydown="handleKeyDown(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()">Enviar</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────
+let dest = null;
+let chatHistory = [];
+let isLoading = false;
+let explorationDone = false;
+const API_ENDPOINT = '/.netlify/functions/ai';
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const raw = localStorage.getItem('explore_dest');
+  if (!raw) {
+    document.getElementById('dest-name').textContent = 'Destino não encontrado.';
+    document.getElementById('exploration-loading').innerHTML =
+      '<span style="color:#999;font-size:0.85rem">Nenhum destino selecionado. <a href="/descobrir" style="color:var(--terracotta)">Voltar a Descobrir →</a></span>';
+    return;
+  }
+
+  dest = JSON.parse(raw);
+  renderHero();
+  startExploration();
+});
+
+// ── HERO ───────────────────────────────────────────────────────────────────
+function renderHero() {
+  document.title = `${dest.name} — Rafa & Ana`;
+  document.getElementById('dest-flag').textContent = dest.flag || '✈️';
+  document.getElementById('dest-name').textContent = dest.name;
+  document.getElementById('dest-tagline').textContent = dest.tagline || '';
+
+  const tags = [];
+  if (dest.bestTime) tags.push({ label: '🗓 ' + dest.bestTime, highlight: false });
+  if (dest.budget)   tags.push({ label: '💰 ' + dest.budget,   highlight: false });
+  if (dest.type === 'surprise') tags.push({ label: '✦ Destino surpresa', highlight: true });
+  if (dest.country)  tags.push({ label: dest.country, highlight: false });
+
+  document.getElementById('dest-tags').innerHTML = tags
+    .map(t => `<span class="dest-tag ${t.highlight ? 'highlight' : ''}">${t.label}</span>`)
+    .join('');
+}
+
+// ── EXPLORATION AUTO-FIRE ──────────────────────────────────────────────────
+async function startExploration() {
+  const systemPrompt = buildSystemPrompt();
+  const initialPrompt = buildInitialPrompt();
+
+  // Add to chatHistory as the first user turn (won't show in chat UI)
+  chatHistory.push({ role: 'user', content: initialPrompt });
+
+  try {
+    const contents = chatHistory.map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    }));
+
+    const response = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        contents,
+        generationConfig: { maxOutputTokens: 3000, temperature: 0.75 }
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error?.message || err.error || `HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const reply = data.candidates?.[0]?.content?.parts?.find(p => p.text)?.text || '';
+
+    chatHistory.push({ role: 'assistant', content: reply });
+
+    // Render in the exploration card
+    document.getElementById('exploration-loading').style.display = 'none';
+    const el = document.getElementById('exploration-content');
+    el.style.display = 'block';
+    el.innerHTML = markdownToHTML(reply);
+
+    explorationDone = true;
+    showSuggestionChips();
+
+  } catch (e) {
+    document.getElementById('exploration-loading').innerHTML =
+      `<span style="color:#c44;font-size:0.85rem">Erro ao gerar exploração: ${e.message}. <button onclick="startExploration()" style="background:none;border:none;color:var(--terracotta);cursor:pointer;text-decoration:underline;font-size:0.85rem">Tentar novamente</button></span>`;
+  }
+}
+
+// ── CHAT ───────────────────────────────────────────────────────────────────
+async function sendMessage() {
+  if (isLoading) return;
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  autoResize(input);
+  hideError();
+
+  addUserMessage(text);
+  chatHistory.push({ role: 'user', content: text });
+
+  isLoading = true;
+  document.getElementById('send-btn').disabled = true;
+  showTyping();
+
+  try {
+    const contents = chatHistory.slice(-16).map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    }));
+
+    const response = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: buildSystemPrompt() }] },
+        contents,
+        generationConfig: { maxOutputTokens: 1500, temperature: 0.7 }
+      })
+    });
+
+    hideTyping();
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error?.message || err.error || `HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const reply = data.candidates?.[0]?.content?.parts?.find(p => p.text)?.text || 'Sem resposta.';
+    chatHistory.push({ role: 'assistant', content: reply });
+    addAssistantMessage(reply);
+
+  } catch (e) {
+    hideTyping();
+    showError('Não foi possível conectar à IA. Verifique sua conexão e tente novamente.');
+    chatHistory.pop();
+  } finally {
+    isLoading = false;
+    document.getElementById('send-btn').disabled = false;
+  }
+}
+
+function sendChip(text) {
+  document.getElementById('chat-input').value = text;
+  sendMessage();
+}
+
+function handleKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+// ── PROMPTS ────────────────────────────────────────────────────────────────
+function buildSystemPrompt() {
+  if (!dest) return '';
+  const expList = (dest.experiences || []).map(e => `• ${e}`).join('\n');
+  const foodList = (dest.food || []).map(f => `• ${f}`).join('\n');
+  return `Você é o melhor consultor de viagens do mundo — com conhecimento profundo de destinos transformadores, logística real e o que de fato importa para cada tipo de viajante.
+
+DESTINO EM ANÁLISE: ${dest.name} (${dest.country || ''})
+${dest.tagline ? `"${dest.tagline}"` : ''}
+
+POR QUE FAZ SENTIDO PARA RAFAEL E ANA:
+${dest.why || 'Destino curado para o perfil do casal.'}
+
+EXPERIÊNCIAS CONHECIDAS:
+${expList || '—'}
+
+HOSPEDAGEM TÍPICA:
+${dest.stay || '—'}
+
+GASTRONOMIA LOCAL:
+${foodList || '—'}
+
+DICA IMPORTANTE:
+${dest.tip || '—'}
+
+ORÇAMENTO ESTIMADO (para 2 pessoas):
+${dest.budget || '—'}
+
+MELHOR ÉPOCA:
+${dest.bestTime || '—'}
+
+SOBRE O CASAL (Rafael e Ana):
+- Casal brasileiro buscando a viagem perfeita juntos
+- Valorizam autenticidade, conforto e experiências transformadoras
+- Fogem do turismo de massa e dos roteiros óbvios
+- Gostam de gastronomia, paisagens únicas e experiências que ficam na memória
+
+Seja específico, honesto e prático. Não use linguagem de guia turístico genérico. Quando pertinente, mencione o que pode dar errado ou o que a maioria dos turistas erra neste destino. Responda sempre em português brasileiro.`;
+}
+
+function buildInitialPrompt() {
+  return `Faça uma exploração completa e honesta de ${dest.name} para nós — não um guia genérico, mas uma análise real e específica.
+
+Estruture sua resposta assim:
+
+## Por que este destino é especial
+O que é verdadeiramente único e insubstituível aqui — o que não existe em mais lugar nenhum.
+
+## O que não podem perder
+As 3 a 5 experiências que definem este destino para quem valoriza autenticidade.
+
+## Logística real
+Como chegar, como se deslocar internamente, quanto tempo faz sentido ficar.
+
+## Melhor época e clima
+Quando ir, quando evitar, o que muda na experiência conforme a época.
+
+## Orçamento honesto
+Quanto custa de verdade para 2 pessoas — hospedagem, alimentação, atividades, voos aproximados a partir do Brasil.
+
+## O lado B
+Pontos negativos reais, riscos, o que pode decepcionar ou o que a maioria dos turistas erra.
+
+Seja direto e específico. Não use clichês de guia turístico.`;
+}
+
+// ── RENDER HELPERS ─────────────────────────────────────────────────────────
+function addUserMessage(text) {
+  appendMessage('user', text);
+}
+function addAssistantMessage(text) {
+  appendMessage('assistant', text);
+}
+
+function appendMessage(role, text) {
+  const area = document.getElementById('messages-area');
+  const div = document.createElement('div');
+  div.className = `message ${role}`;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar';
+  avatar.textContent = role === 'user' ? 'R' : 'IA';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.innerHTML = role === 'assistant' ? markdownToHTML(text) : escapeHTML(text);
+
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+
+function showTyping() {
+  const area = document.getElementById('messages-area');
+  const div = document.createElement('div');
+  div.id = 'typing-msg';
+  div.className = 'message assistant';
+  div.innerHTML = `
+    <div class="msg-avatar">IA</div>
+    <div class="msg-bubble" style="padding:12px 15px">
+      <div class="typing-dots visible" style="display:flex;gap:4px;align-items:center">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--text-light);animation:pulse 1.2s ease-in-out infinite;display:inline-block"></span>
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--text-light);animation:pulse 1.2s ease-in-out infinite 0.2s;display:inline-block"></span>
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--text-light);animation:pulse 1.2s ease-in-out infinite 0.4s;display:inline-block"></span>
+      </div>
+    </div>`;
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+
+function hideTyping() {
+  document.getElementById('typing-msg')?.remove();
+}
+
+function showSuggestionChips() {
+  if (!dest) return;
+  const chipsRow = document.getElementById('chips-row');
+  const suggestions = [
+    `O que pode dar errado nessa viagem para ${dest.name}?`,
+    `Compare ${dest.name} com um destino europeu clássico`,
+    `Roteiro ideal de 10 dias em ${dest.name}`,
+    `Qual a melhor hospedagem para um casal que quer conforto e autenticidade?`,
+    `Quais os maiores erros que os turistas cometem em ${dest.name}?`,
+  ];
+  chipsRow.innerHTML = suggestions
+    .map(s => `<button class="suggest-chip" onclick="sendChip('${s.replace(/'/g, "\\'")}')">${s}</button>`)
+    .join('');
+  chipsRow.style.display = 'flex';
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-banner');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideError() {
+  document.getElementById('error-banner').style.display = 'none';
+}
+
+// ── MARKDOWN ───────────────────────────────────────────────────────────────
+function markdownToHTML(text) {
+  // Escape HTML first
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Headers
+  html = html
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h2>$1</h2>');
+
+  // Bold and italic
+  html = html
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // Horizontal rule
+  html = html.replace(/^---+$/gm, '<hr>');
+
+  // Unordered lists
+  html = html.replace(/((?:^[•\-\*] .+\n?)+)/gm, (block) => {
+    const items = block.trim().split('\n').map(l =>
+      `<li>${l.replace(/^[•\-\*] /, '')}</li>`
+    ).join('');
+    return `<ul>${items}</ul>`;
+  });
+
+  // Paragraphs — wrap consecutive non-tag lines
+  html = html
+    .split('\n\n')
+    .map(block => {
+      block = block.trim();
+      if (!block) return '';
+      if (/^<(h[1-6]|ul|hr)/.test(block)) return block;
+      return `<p>${block.replace(/\n/g, '<br>')}</p>`;
+    })
+    .join('\n');
+
+  return html;
+}
+
+function escapeHTML(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 130) + 'px';
+}
+</script>
+
+</body>
+</html>

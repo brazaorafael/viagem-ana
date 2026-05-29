@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planejar — Viagem com Ana</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #FAF7F2;
+      --terracotta: #C17353;
+      --olive: #6B7A5C;
+      --sea: #4A7EA5;
+      --wine: #7A2942;
+      --warm-white: #FFFEF9;
+      --text: #2C2520;
+      --text-light: #6B5E55;
+      --border: #E8DDD5;
+      --shadow: 0 2px 16px rgba(44,37,32,0.08);
+      --shadow-lg: 0 8px 32px rgba(44,37,32,0.14);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+
+    /* ── NAV ── */
+    nav {
+      background: var(--warm-white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: var(--terracotta);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+    }
+    .nav-back {
+      font-size: 0.82rem;
+      color: var(--text-light);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--terracotta); }
+    .nav-actions { display: flex; align-items: center; gap: 16px; }
+    .nav-key-btn {
+      font-size: 0.78rem;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-light);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .nav-key-btn:hover { border-color: var(--terracotta); color: var(--terracotta); }
+    .nav-key-indicator {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #ccc;
+      display: inline-block;
+      margin-right: 4px;
+    }
+    .nav-key-indicator.active { background: #5cb85c; }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, var(--wine) 0%, #4a1030 100%);
+      color: white;
+      padding: 52px 32px 44px;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.7;
+      margin-bottom: 10px;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.4rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .hero p {
+      font-size: 0.95rem;
+      opacity: 0.8;
+      font-weight: 300;
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .main { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* ── SECTION HEADER ── */
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .section-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .section-header span {
+      font-size: 0.78rem;
+      color: var(--text-light);
+      font-weight: 400;
+    }
+
+    /* ── ROUTE CARDS ── */
+    .routes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 48px;
+    }
+    @media (max-width: 780px) { .routes-grid { grid-template-columns: 1fr; } }
+
+    .route-card {
+      background: var(--warm-white);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: box-shadow 0.2s, border-color 0.2s;
+      position: relative;
+    }
+    .route-card:hover { box-shadow: var(--shadow-lg); }
+    .route-card.selected { border-color: var(--terracotta); }
+    .route-card.selected::before {
+      content: '✓ Opção favorita';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--terracotta);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 12px;
+      border-radius: 20px;
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+    }
+    .route-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 6px;
+      width: fit-content;
+    }
+    .badge-a { background: #EEF5EC; color: var(--olive); }
+    .badge-abis { background: #EBF2F9; color: var(--sea); }
+    .badge-b { background: #F9EDE8; color: var(--terracotta); }
+    .route-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .route-summary {
+      font-size: 0.82rem;
+      color: var(--text-light);
+      line-height: 1.5;
+    }
+    .route-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .tag {
+      font-size: 0.72rem;
+      padding: 3px 9px;
+      border-radius: 20px;
+      background: var(--cream);
+      color: var(--text-light);
+      border: 1px solid var(--border);
+    }
+    .route-pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .pros, .cons {
+      font-size: 0.78rem;
+      line-height: 1.6;
+    }
+    .pros-title { color: var(--olive); font-weight: 600; margin-bottom: 4px; }
+    .cons-title { color: var(--wine); font-weight: 600; margin-bottom: 4px; }
+    .pros li, .cons li { list-style: none; padding-left: 14px; position: relative; color: var(--text-light); }
+    .pros li::before { content: '+'; position: absolute; left: 0; color: var(--olive); font-weight: 700; }
+    .cons li::before { content: '−'; position: absolute; left: 0; color: var(--wine); font-weight: 700; }
+
+    .vote-area {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .vote-count {
+      font-size: 0.78rem;
+      color: var(--text-light);
+    }
+    .vote-count strong { color: var(--terracotta); font-size: 1rem; }
+    .vote-btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      background: white;
+      color: var(--text-light);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .vote-btn:hover { border-color: var(--terracotta); color: var(--terracotta); }
+    .vote-btn.voted {
+      background: var(--terracotta);
+      color: white;
+      border-color: var(--terracotta);
+    }
+
+    /* ── DECISIONS ── */
+    .decisions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 48px;
+    }
+    @media (max-width: 620px) { .decisions-grid { grid-template-columns: 1fr; } }
+
+    .decision-item {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .decision-item:hover { background: #F5F0E8; }
+    .decision-item.done { opacity: 0.5; }
+    .decision-item.done .decision-text { text-decoration: line-through; }
+    .decision-check {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+      transition: all 0.2s;
+    }
+    .decision-item.done .decision-check {
+      background: var(--olive);
+      border-color: var(--olive);
+      color: white;
+    }
+    .decision-urgency {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+    .urgency-critical { color: #d32f2f; }
+    .urgency-high { color: #e65100; }
+    .urgency-medium { color: var(--sea); }
+    .decision-text {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.4;
+    }
+    .decision-note {
+      font-size: 0.75rem;
+      color: var(--text-light);
+      margin-top: 3px;
+      line-height: 1.4;
+    }
+
+    /* ── CHAT ── */
+    .chat-section {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .chat-header {
+      background: linear-gradient(135deg, #1a1210, #2d1a0e);
+      color: white;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .chat-header-icon {
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+    .chat-header-text h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .chat-header-text p {
+      font-size: 0.75rem;
+      opacity: 0.65;
+      margin-top: 2px;
+    }
+    .messages-area {
+      height: 420px;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+    .message { display: flex; gap: 10px; max-width: 85%; }
+    .message.user { align-self: flex-end; flex-direction: row-reverse; }
+    .message-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .message.assistant .message-avatar { background: var(--terracotta); color: white; font-size: 0.7rem; }
+    .message.user .message-avatar { background: var(--sea); color: white; }
+    .message-bubble {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.87rem;
+      line-height: 1.6;
+      color: var(--text);
+    }
+    .message.user .message-bubble {
+      background: var(--sea);
+      color: white;
+      border-color: var(--sea);
+    }
+    .message-bubble strong { font-weight: 600; }
+    .message-bubble em { font-style: italic; }
+    .message-bubble ul, .message-bubble ol {
+      padding-left: 18px;
+      margin: 6px 0;
+    }
+    .message-bubble li { margin-bottom: 3px; }
+    .message-bubble h3 { font-family: 'Playfair Display', serif; font-size: 0.95rem; margin: 10px 0 4px; }
+    .message-bubble p { margin-bottom: 6px; }
+    .message-bubble p:last-child { margin-bottom: 0; }
+    .message-bubble code { background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 4px; font-size: 0.82em; }
+    .message.user .message-bubble code { background: rgba(255,255,255,0.2); }
+
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 10px 14px;
+    }
+    .typing-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--terracotta);
+      opacity: 0.4;
+      animation: typing 1.2s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing { 0%,80%,100%{opacity:0.4;transform:scale(1)} 40%{opacity:1;transform:scale(1.2)} }
+
+    .chips-area {
+      padding: 12px 24px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      border-top: 1px solid var(--border);
+    }
+    .chip {
+      font-size: 0.78rem;
+      font-family: 'Inter', sans-serif;
+      padding: 6px 13px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: var(--cream);
+      color: var(--text-light);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .chip:hover { border-color: var(--terracotta); color: var(--terracotta); background: white; }
+
+    .input-area {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+    }
+    #chat-input {
+      flex: 1;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.87rem;
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--cream);
+      color: var(--text);
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+      line-height: 1.5;
+      max-height: 120px;
+    }
+    #chat-input:focus { border-color: var(--terracotta); background: white; }
+    #chat-input::placeholder { color: #bbb; }
+    .send-btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 12px 20px;
+      border-radius: 10px;
+      background: var(--terracotta);
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+      align-self: flex-end;
+    }
+    .send-btn:hover { background: #a85e3d; }
+    .send-btn:disabled { background: #ccc; cursor: default; }
+
+    /* ── API KEY MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(3px);
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal {
+      background: var(--warm-white);
+      border-radius: 18px;
+      padding: 36px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+    }
+    .modal h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    .modal p {
+      font-size: 0.85rem;
+      color: var(--text-light);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .modal a { color: var(--sea); }
+    .modal-input {
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .modal-input:focus { border-color: var(--terracotta); }
+    .modal-btn {
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 13px;
+      background: var(--terracotta);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .modal-btn:hover { background: #a85e3d; }
+    .modal-skip {
+      display: block;
+      text-align: center;
+      margin-top: 12px;
+      font-size: 0.78rem;
+      color: var(--text-light);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .modal-skip:hover { color: var(--text); }
+    .modal-note {
+      font-size: 0.74rem;
+      color: var(--text-light);
+      margin-top: 10px;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+
+<!-- API Key Modal (desativado — chave no servidor) -->
+<div class="modal-overlay hidden" id="modal-overlay" style="display:none!important">
+  <div class="modal">
+    <h2>Configurar Chat com IA</h2>
+    <p>
+      Para usar o assistente de viagem com inteligência artificial, você precisa de uma chave de API Gemini (Google). É gratuita!<br><br>
+      Obtenha a sua em <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com/app/apikey</a> → "Create API Key".
+    </p>
+    <input
+      type="password"
+      class="modal-input"
+      id="api-key-input"
+      placeholder="AIza..."
+      autocomplete="off"
+    />
+    <button class="modal-btn" onclick="saveApiKey()">Salvar chave e começar</button>
+    <span class="modal-skip" onclick="dismissModal()">Pular por agora — usar sem IA</span>
+    <p class="modal-note">🔒 A chave fica salva apenas no seu navegador (localStorage). Nunca é enviada para nenhum servidor além do Google.</p>
+  </div>
+</div>
+
+<!-- Nav -->
+<nav>
+  <a href="/" class="nav-logo">✈ Viagem com Ana</a>
+  <div class="nav-actions">
+    <span style="font-size:0.78rem;color:#5cb85c;display:flex;align-items:center;gap:5px">
+      <span style="width:8px;height:8px;border-radius:50%;background:#5cb85c;display:inline-block"></span>IA ativa
+    </span>
+    <a href="/" class="nav-back">← Dashboard</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <p class="hero-eyebrow">Rafael & Ana · Itália · Setembro 2026</p>
+  <h1>Planejar a Viagem</h1>
+  <p>Compare os roteiros, marque as decisões tomadas e converse com a IA para ajustar cada detalhe.</p>
+</div>
+
+<div class="main">
+
+  <!-- Route Comparison -->
+  <div class="section-header">
+    <h2>Comparar Roteiros</h2>
+    <span>Vote no favorito — salvo no seu navegador</span>
+  </div>
+  <div class="routes-grid">
+
+    <!-- Opção A: Toscana Pura -->
+    <div class="route-card" id="card-a">
+      <span class="route-badge badge-a">🌿 Opção A</span>
+      <h3>Toscana Pura</h3>
+      <p class="route-summary">12 dias focados inteiramente na Toscana — vila rural, moto nos ciprestes, trufas e Florença como grand finale.</p>
+      <div class="route-tags">
+        <span class="tag">Roma 1n</span>
+        <span class="tag">Val d'Orcia 7n</span>
+        <span class="tag">Florença 3n</span>
+        <span class="tag">SP146 moto</span>
+        <span class="tag">Truffle hunting</span>
+      </div>
+      <div class="route-pros-cons">
+        <ul class="pros">
+          <div class="pros-title">A favor</div>
+          <li>Máximo descanso</li>
+          <li>Logística simples</li>
+          <li>Alma emocional forte</li>
+          <li>Gastronomia profunda</li>
+        </ul>
+        <ul class="cons">
+          <div class="cons-title">Atenção</div>
+          <li>Sem mar</li>
+          <li>Sem Costa Amalfitana</li>
+          <li>Cenário mais campo</li>
+        </ul>
+      </div>
+      <div class="vote-area">
+        <div class="vote-count"><strong id="votes-a">0</strong> voto(s)</div>
+        <button class="vote-btn" id="vote-btn-a" onclick="vote('a')">♡ Votar nesta</button>
+      </div>
+    </div>
+
+    <!-- Opção A-bis: Amalfi -->
+    <div class="route-card" id="card-abis">
+      <span class="route-badge badge-abis">🌊 Opção A-bis</span>
+      <h3>Amalfi Pura</h3>
+      <p class="route-summary">12 dias com foco na Costa Amalfitana — Positano, barcos, Capri, Ravello e mar de setembro.</p>
+      <div class="route-tags">
+        <span class="tag">Roma 1n</span>
+        <span class="tag">Positano 5-6n</span>
+        <span class="tag">Florença 1n</span>
+        <span class="tag">Barcos</span>
+        <span class="tag">Capri</span>
+      </div>
+      <div class="route-pros-cons">
+        <ul class="pros">
+          <div class="pros-title">A favor</div>
+          <li>Visual icônico</li>
+          <li>Mar em setembro</li>
+          <li>Experiência de passeio de barco</li>
+          <li>Capri & Ravello</li>
+        </ul>
+        <ul class="cons">
+          <div class="cons-title">Atenção</div>
+          <li>Sem SP146 moto</li>
+          <li>Sem truffle hunting</li>
+          <li>Mais turístico</li>
+          <li>Florença só 1 noite</li>
+        </ul>
+      </div>
+      <div class="vote-area">
+        <div class="vote-count"><strong id="votes-abis">0</strong> voto(s)</div>
+        <button class="vote-btn" id="vote-btn-abis" onclick="vote('abis')">♡ Votar nesta</button>
+      </div>
+    </div>
+
+    <!-- Opção B: Combo 15 dias -->
+    <div class="route-card" id="card-b">
+      <span class="route-badge badge-b">🍷 Opção B</span>
+      <h3>Combo 15 dias</h3>
+      <p class="route-summary">A versão completa: Roma + Costa Amalfitana + Val d'Orcia + Florença. Sem cortar nada — mas requer 15 dias.</p>
+      <div class="route-tags">
+        <span class="tag">Roma 1n</span>
+        <span class="tag">Positano 4n</span>
+        <span class="tag">Val d'Orcia 4n</span>
+        <span class="tag">Florença 2n</span>
+        <span class="tag">+3 dias</span>
+      </div>
+      <div class="route-pros-cons">
+        <ul class="pros">
+          <div class="pros-title">A favor</div>
+          <li>Tudo junto sem cortes</li>
+          <li>Mar e campo</li>
+          <li>SP146 + trufa + barco</li>
+          <li>Score 8.8 validado</li>
+        </ul>
+        <ul class="cons">
+          <div class="cons-title">Atenção</div>
+          <li>15 dias (3 a mais)</li>
+          <li>Mais relocações</li>
+          <li>Custo maior</li>
+          <li>Agenda mais longa</li>
+        </ul>
+      </div>
+      <div class="vote-area">
+        <div class="vote-count"><strong id="votes-b">0</strong> voto(s)</div>
+        <button class="vote-btn" id="vote-btn-b" onclick="vote('b')">♡ Votar nesta</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Pending Decisions -->
+  <div class="section-header">
+    <h2>Decisões Pendentes</h2>
+    <span>Clique para marcar como resolvida</span>
+  </div>
+  <div class="decisions-grid" id="decisions-grid">
+    <!-- Populated by JS -->
+  </div>
+
+  <!-- Chat -->
+  <div class="section-header">
+    <h2>Assistente de Viagem</h2>
+    <span>Com contexto completo da viagem de vocês</span>
+  </div>
+  <div class="chat-section">
+    <div class="chat-header">
+      <div class="chat-header-icon">✈</div>
+      <div class="chat-header-text">
+        <h3>Consultor Rafael & Ana</h3>
+        <p>Especialista em Itália · Contexto completo da viagem carregado</p>
+      </div>
+    </div>
+    <div class="messages-area" id="messages-area">
+      <div class="message assistant">
+        <div class="message-avatar">IA</div>
+        <div class="message-bubble">
+          <p>Olá, Rafael! Tenho todo o contexto da viagem de vocês carregado — preferências, decisões confirmadas, as três opções de roteiro e as decisões pendentes.</p>
+          <p>Posso ajudar a <strong>comparar os roteiros</strong>, discutir trade-offs, sugerir o que reservar primeiro ou explorar qualquer aspecto da viagem. O que você quer pensar hoje?</p>
+        </div>
+      </div>
+    </div>
+    <div class="chips-area">
+      <button class="chip" onclick="sendChip('Compare as 3 opções de roteiro para nos ajudar a decidir')">Comparar os 3 roteiros</button>
+      <button class="chip" onclick="sendChip('O que é mais urgente reservar agora?')">O que reservar primeiro?</button>
+      <button class="chip" onclick="sendChip('Positano ou Praiano — qual escolher?')">Positano ou Praiano?</button>
+      <button class="chip" onclick="sendChip('Quais são as experiências imperdíveis na Val d\'Orcia?')">Val d'Orcia imperdíveis</button>
+      <button class="chip" onclick="sendChip('Como está o timing ideal para reservas em setembro 2026?')">Timing de reservas</button>
+      <button class="chip" onclick="sendChip('Qual é o risco de não ter villa disponível em Val d\'Orcia?')">Risco da villa</button>
+    </div>
+    <div class="input-area">
+      <textarea
+        id="chat-input"
+        placeholder="Pergunte sobre o roteiro, hospedagem, experiências..."
+        rows="1"
+        onkeydown="handleKeyDown(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()">Enviar</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── CONSTANTS ──────────────────────────────────────────────────────────────
+
+const DECISIONS = [
+  { id: 'd0', urgency: 'critical', label: 'Definir formato do roteiro (A, A-bis ou B)', note: 'A decisão mais importante — bloqueia todas as reservas' },
+  { id: 'd1', urgency: 'critical', label: 'Confirmar datas exatas em setembro 2026', note: 'Sem datas, nada pode ser reservado' },
+  { id: 'd2', urgency: 'high',     label: 'Reservar villa rural em Val d\'Orcia', note: 'Alto risco de esgotamento — 6+ meses de antecedência' },
+  { id: 'd3', urgency: 'high',     label: 'Reservar hotel em Positano ou Praiano', note: '4-6 meses antes para setembro' },
+  { id: 'd4', urgency: 'high',     label: 'Verificar validade dos passaportes', note: 'Precisa valer até março 2027' },
+  { id: 'd5', urgency: 'medium',   label: 'Definir aeroporto de saída: FCO ou FLR open-jaw', note: 'Comparar preços quando abrir' },
+  { id: 'd6', urgency: 'medium',   label: 'Definir orçamento para passagens executivas', note: 'Estimativa: BRL 45–65k para 2 pax' },
+  { id: 'd7', urgency: 'medium',   label: 'Verificar pontos C6 Átomos e validade', note: '84k pontos disponíveis — apoio estratégico' },
+];
+
+const URGENCY_LABELS = { critical: '🚨 Crítico', high: '🔶 Alta', medium: '🔵 Média' };
+const URGENCY_CLASSES = { critical: 'urgency-critical', high: 'urgency-high', medium: 'urgency-medium' };
+
+const SYSTEM_PROMPT = `Você é um consultor especialista em viagens de luxo para casais, com foco na Itália. Está ajudando Rafael e Ana a planejar a primeira viagem internacional deles juntos.
+
+PERFIL DO CASAL:
+- Primeira viagem internacional juntos — tem peso emocional especial
+- Objetivo: descanso mental, conexão, romantismo, criar memórias felizes
+- Estilo: romântico, confortável, gastronômico, leve, bem planejado
+- Rafael e Ana valorizam experiências autênticas e fogem do turismo de massa
+- Evitar: roteiros cansativos, muitas trocas de hotel, listas de tarefas turísticas obrigatórias
+
+DECISÕES JÁ CONFIRMADAS:
+- Destino: Itália — Costa Amalfitana + Toscana
+- Período: Setembro 2026
+- Preferência por classe executiva nos voos internacionais
+- Chegada: Roma Fiumicino (FCO)
+- Base em Roma: Trastevere
+- Costa Amalfitana: base em Positano (alternativa válida: Praiano — mais íntimo e quieto)
+- Val d'Orcia: villa rural entre Pienza e Montalcino (experiência definitiva da Toscana)
+- Florença: base em Oltrarno
+- Carro alugado na Toscana (dias 6–10 do roteiro)
+- SP146 — 20 km entre Pienza e Montepulciano, estrada dos ciprestes — experiência de moto planejada
+- Truffle hunting em dia dedicado — não comprimir com outras atividades
+- Siena como parada no transfer para Florença
+
+ROTEIRO MASTER ATUAL (12 dias / 11 noites — nota 8.8/10):
+- Roma: 1 noite
+- Costa Amalfitana (Positano): 4 noites
+- Val d'Orcia (villa): 4 noites
+- Florença (Oltrarno): 2 noites
+- Transfer Roma→Positano: van privativa
+- Transfer Nápoles→Florença: Frecciarossa
+
+AS TRÊS OPÇÕES EM ANÁLISE:
+1. OPÇÃO A — Toscana Pura (12 dias): Roma 1n + Val d'Orcia 7n + Florença 3n. Sem Costa Amalfitana. Máximo descanso, logística simples, gastronomia profunda. Foco total na Toscana.
+2. OPÇÃO A-bis — Amalfi Pura (12 dias): Roma 1n + Positano/Praiano 5-6n + Florença 1n. Visual icônico, mar, barcos, Capri. Sem trufa, sem moto SP146.
+3. OPÇÃO B — Combo 15 dias: Roma 1n + Costa Amalfitana 4n + Val d'Orcia 4n + Florença 2n. A melhor combinação, mas requer 15 dias de viagem.
+
+DECISÕES URGENTES AINDA EM ABERTO (em ordem de prioridade):
+1. Definir formato do roteiro (A, A-bis ou B) — bloqueia TUDO que vem depois
+2. Confirmar datas exatas em setembro 2026
+3. Reservar villa rural em Val d'Orcia (alto risco de esgotamento — 6+ meses)
+4. Reservar hotel em Positano ou Praiano (4-6 meses antes)
+5. Verificar validade dos passaportes (precisam valer até março 2027)
+
+CONTEXTO ADICIONAL:
+- Companhias prioritárias para passagens: TAP, Iberia, LATAM, Air France
+- Saída FCO recomendada; FLR open-jaw como alternativa se >20% mais barato
+- C6 Átomos: 84.000 pontos — apoio estratégico, insuficiente para resgate total
+- Hotéis sem cadeias — preferência por boutique e propriedades com personalidade
+
+INSTRUÇÕES DE COMPORTAMENTO:
+- Responda SEMPRE em português
+- Seja analítico, direto, objetivo e empático
+- Quando houver trade-offs, apresente-os claramente
+- Priorize a experiência emocional do casal em todas as recomendações
+- Quando recomendar, explique o porquê
+- Não recomende compra ou reserva sem indicar riscos e alternativas
+- Sugira próximos passos concretos ao final de respostas importantes
+- Use formatação leve — parágrafos, listas quando necessário, sem exagero`;
+
+// ── STATE ───────────────────────────────────────────────────────────────────
+let chatHistory = [];
+let isLoading = false;
+
+// ── INIT ────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  updateKeyIndicator();
+  renderDecisions();
+  renderVotes();
+
+  // Prefill de chat vindo do descobrir.html
+  const prefill = localStorage.getItem('chat_prefill');
+  if (prefill) {
+    localStorage.removeItem('chat_prefill');
+    const input = document.getElementById('chat-input');
+    if (input) {
+      input.value = prefill;
+      input.focus();
+      setTimeout(() => sendMessage(), 400);
+    }
+  }
+});
+
+// ── API KEY ─────────────────────────────────────────────────────────────────
+function showModal() {
+  document.getElementById('modal-overlay').classList.remove('hidden');
+  setTimeout(() => document.getElementById('api-key-input').focus(), 100);
+}
+function dismissModal() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+}
+function saveApiKey() {
+  const input = document.getElementById('api-key-input').value.trim();
+  if (!input || !input.startsWith('AIza')) {
+    document.getElementById('api-key-input').style.borderColor = '#d32f2f';
+    document.getElementById('api-key-input').placeholder = 'Chave inválida — deve começar com AIza...';
+    return;
+  }
+  apiKey = input;
+  localStorage.setItem('gemini_api_key', apiKey);
+  dismissModal();
+  updateKeyIndicator();
+  addAssistantMessage('Chave configurada! Agora posso responder com inteligência artificial. Como posso ajudar?');
+}
+function updateKeyIndicator() {
+  const dot = document.getElementById('key-indicator');
+  const text = document.getElementById('key-status-text');
+  if (apiKey) {
+    dot.classList.add('active');
+    text.textContent = 'IA ativa';
+  } else {
+    dot.classList.remove('active');
+    text.textContent = 'Configurar IA';
+  }
+}
+
+// ── DECISIONS ───────────────────────────────────────────────────────────────
+function renderDecisions() {
+  const done = JSON.parse(localStorage.getItem('decisions_done') || '[]');
+  const grid = document.getElementById('decisions-grid');
+  grid.innerHTML = DECISIONS.map(d => {
+    const isDone = done.includes(d.id);
+    return `
+      <div class="decision-item ${isDone ? 'done' : ''}" onclick="toggleDecision('${d.id}', this)">
+        <div class="decision-check">${isDone ? '✓' : ''}</div>
+        <div>
+          <div class="decision-urgency ${URGENCY_CLASSES[d.urgency]}">${URGENCY_LABELS[d.urgency]}</div>
+          <div class="decision-text">${d.label}</div>
+          <div class="decision-note">${d.note}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleDecision(id, el) {
+  const done = JSON.parse(localStorage.getItem('decisions_done') || '[]');
+  const idx = done.indexOf(id);
+  if (idx === -1) done.push(id); else done.splice(idx, 1);
+  localStorage.setItem('decisions_done', JSON.stringify(done));
+  renderDecisions();
+}
+
+// ── VOTING ───────────────────────────────────────────────────────────────────
+function renderVotes() {
+  const votes = JSON.parse(localStorage.getItem('route_votes') || '{"a":0,"abis":0,"b":0}');
+  const myVote = localStorage.getItem('my_vote');
+  ['a','abis','b'].forEach(opt => {
+    document.getElementById(`votes-${opt}`).textContent = votes[opt] || 0;
+    const btn = document.getElementById(`vote-btn-${opt}`);
+    const card = document.getElementById(`card-${opt}`);
+    if (myVote === opt) {
+      btn.classList.add('voted');
+      btn.textContent = '♥ Votado';
+      card.classList.add('selected');
+    } else {
+      btn.classList.remove('voted');
+      btn.textContent = '♡ Votar nesta';
+      card.classList.remove('selected');
+    }
+  });
+}
+
+function vote(opt) {
+  const votes = JSON.parse(localStorage.getItem('route_votes') || '{"a":0,"abis":0,"b":0}');
+  const prevVote = localStorage.getItem('my_vote');
+  if (prevVote && prevVote !== opt) {
+    votes[prevVote] = Math.max(0, (votes[prevVote] || 1) - 1);
+  }
+  if (prevVote === opt) {
+    // Desvote
+    votes[opt] = Math.max(0, (votes[opt] || 1) - 1);
+    localStorage.removeItem('my_vote');
+  } else {
+    votes[opt] = (votes[opt] || 0) + 1;
+    localStorage.setItem('my_vote', opt);
+  }
+  localStorage.setItem('route_votes', JSON.stringify(votes));
+  renderVotes();
+}
+
+// ── CHAT ─────────────────────────────────────────────────────────────────────
+function renderMarkdown(text) {
+  return text
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^# (.+)$/gm, '<h3>$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/^[-•] (.+)$/gm, '<li>$1</li>')
+    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>\n?)+/g, m => `<ul>${m}</ul>`)
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>')
+    .replace(/^/, '<p>').replace(/$/, '</p>')
+    .replace(/<p><\/p>/g, '')
+    .replace(/<p>(<h3>)/g, '$1')
+    .replace(/(<\/h3>)<\/p>/g, '$1')
+    .replace(/<p>(<ul>)/g, '$1')
+    .replace(/(<\/ul>)<\/p>/g, '$1');
+}
+
+function addAssistantMessage(text) {
+  const area = document.getElementById('messages-area');
+  const msg = document.createElement('div');
+  msg.className = 'message assistant';
+  msg.innerHTML = `
+    <div class="message-avatar">IA</div>
+    <div class="message-bubble">${renderMarkdown(text)}</div>`;
+  area.appendChild(msg);
+  area.scrollTop = area.scrollHeight;
+}
+
+function addUserMessage(text) {
+  const area = document.getElementById('messages-area');
+  const msg = document.createElement('div');
+  msg.className = 'message user';
+  msg.innerHTML = `
+    <div class="message-avatar">R</div>
+    <div class="message-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  area.appendChild(msg);
+  area.scrollTop = area.scrollHeight;
+}
+
+function showTyping() {
+  const area = document.getElementById('messages-area');
+  const el = document.createElement('div');
+  el.className = 'message assistant';
+  el.id = 'typing-msg';
+  el.innerHTML = `
+    <div class="message-avatar">IA</div>
+    <div class="message-bubble">
+      <div class="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    </div>`;
+  area.appendChild(el);
+  area.scrollTop = area.scrollHeight;
+}
+
+function hideTyping() {
+  const el = document.getElementById('typing-msg');
+  if (el) el.remove();
+}
+
+async function sendMessage() {
+  if (isLoading) return;
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  autoResize(input);
+  addUserMessage(text);
+  chatHistory.push({ role: 'user', content: text });
+
+  isLoading = true;
+  document.getElementById('send-btn').disabled = true;
+  showTyping();
+
+  try {
+    // Build Gemini contents from chatHistory (last 12 turns)
+    const contents = chatHistory.slice(-12).map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    }));
+
+    const response = await fetch('/api/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents,
+        generationConfig: { maxOutputTokens: 2048, temperature: 0.7 }
+      })
+    });
+
+    hideTyping();
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      const errMsg = typeof err.error === 'string' ? err.error : (err.error?.message || err.message || response.statusText || `HTTP ${response.status}`);
+      addAssistantMessage(`Erro (${response.status}): ${errMsg}`);
+      chatHistory.pop();
+      return;
+    }
+
+    const data = await response.json();
+    const reply = data.candidates?.[0]?.content?.parts?.find(p => p.text)?.text || 'Sem resposta.';
+    chatHistory.push({ role: 'assistant', content: reply });
+    addAssistantMessage(reply);
+
+  } catch (e) {
+    hideTyping();
+    addAssistantMessage('Não foi possível conectar à API. Verifique sua conexão e tente novamente.');
+    chatHistory.pop();
+  } finally {
+    isLoading = false;
+    document.getElementById('send-btn').disabled = false;
+  }
+}
+
+function sendChip(text) {
+  document.getElementById('chat-input').value = text;
+  sendMessage();
+}
+
+function handleKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+</script>
+</body>
+</html>

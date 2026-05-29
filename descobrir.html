@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Descobrir — Qual viagem é a nossa?</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #FAF7F2; --terracotta: #C17353; --olive: #6B7A5C;
+      --sea: #4A7EA5; --wine: #7A2942; --warm-white: #FFFEF9;
+      --text: #2C2520; --text-light: #6B5E55; --border: #E8DDD5;
+      --shadow: 0 2px 16px rgba(44,37,32,0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+
+    nav { background: var(--warm-white); border-bottom: 1px solid var(--border); padding: 0 32px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--terracotta); text-decoration: none; }
+    .nav-back { font-size: 0.82rem; color: var(--text-light); text-decoration: none; }
+    .nav-back:hover { color: var(--terracotta); }
+
+    .screen { display: none; min-height: calc(100vh - 60px); }
+    .screen.active { display: block; }
+
+    /* ── WELCOME ── */
+    .welcome { max-width: 680px; margin: 0 auto; padding: 72px 24px 80px; text-align: center; }
+    .welcome-eyebrow { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 14px; }
+    .welcome h1 { font-family: 'Playfair Display', serif; font-size: 2.5rem; line-height: 1.2; margin-bottom: 18px; }
+    .welcome h1 em { font-style: italic; color: var(--wine); }
+    .welcome .intro { font-size: 0.95rem; color: var(--text-light); line-height: 1.7; max-width: 500px; margin: 0 auto 44px; }
+    .who-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 460px; margin: 0 auto 28px; }
+    .who-card { background: var(--warm-white); border: 2px solid var(--border); border-radius: 16px; padding: 28px 20px; cursor: pointer; transition: all 0.2s; text-align: center; }
+    .who-card:hover { border-color: var(--terracotta); transform: translateY(-2px); box-shadow: var(--shadow); }
+    .who-card.selected { border-color: var(--terracotta); background: #FEF5F0; }
+    .who-avatar { font-size: 2.2rem; margin-bottom: 8px; }
+    .who-name { font-family: 'Playfair Display', serif; font-size: 1.2rem; }
+    .who-status { font-size: 0.75rem; color: var(--text-light); margin-top: 5px; }
+    .who-status.done { color: var(--olive); font-weight: 600; }
+    .redo-link { font-size: 0.72rem; color: var(--sea); text-decoration: underline; cursor: pointer; margin-top: 4px; display: block; }
+    .start-btn { font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 600; padding: 14px 40px; background: var(--wine); color: white; border: none; border-radius: 50px; cursor: pointer; transition: background 0.2s; display: none; }
+    .start-btn:hover { background: #5a1e33; }
+    .both-done-cta { margin-top: 32px; padding: 24px; background: var(--warm-white); border: 1.5px solid var(--terracotta); border-radius: 14px; display: none; }
+    .both-done-cta p { font-size: 0.88rem; color: var(--text-light); margin-bottom: 14px; }
+    .reveal-big-btn { font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600; padding: 14px 36px; background: var(--terracotta); color: white; border: none; border-radius: 50px; cursor: pointer; transition: background 0.2s; }
+    .reveal-big-btn:hover { background: #a85e3d; }
+
+    /* ── QUIZ ── */
+    .quiz-wrap { max-width: 660px; margin: 0 auto; padding: 44px 24px 80px; }
+    .quiz-progress-bar { height: 3px; background: var(--border); border-radius: 2px; margin-bottom: 40px; }
+    .quiz-progress-fill { height: 100%; background: var(--terracotta); border-radius: 2px; transition: width 0.4s ease; }
+    .quiz-meta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 36px; }
+    .quiz-who-label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--terracotta); }
+    .quiz-step-label { font-size: 0.78rem; color: var(--text-light); }
+
+    .question-block { animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    .question-category { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--olive); font-weight: 600; margin-bottom: 10px; }
+    .question-text { font-family: 'Playfair Display', serif; font-size: 1.55rem; line-height: 1.4; color: var(--text); margin-bottom: 6px; }
+    .question-sub { font-size: 0.84rem; color: var(--text-light); margin-bottom: 28px; line-height: 1.5; }
+
+    .options-grid { display: grid; gap: 10px; }
+    .options-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+    @media (max-width:560px) { .options-grid.cols-2 { grid-template-columns: 1fr; } }
+
+    .option-btn { background: var(--warm-white); border: 1.5px solid var(--border); border-radius: 12px; padding: 14px 18px; text-align: left; cursor: pointer; transition: all 0.15s; font-family: 'Inter', sans-serif; }
+    .option-btn:hover { border-color: var(--terracotta); background: #FEF5F0; }
+    .option-btn.selected { border-color: var(--terracotta); background: #FEF5F0; }
+    .option-emoji { font-size: 1.3rem; display: block; margin-bottom: 6px; }
+    .option-label { font-size: 0.88rem; font-weight: 500; color: var(--text); display: block; }
+    .option-label.selected { color: var(--wine); }
+    .option-desc { font-size: 0.75rem; color: var(--text-light); margin-top: 3px; display: block; }
+
+    .spectrum { margin: 0 0 24px; }
+    .spectrum-poles { display: flex; justify-content: space-between; font-size: 0.76rem; color: var(--text-light); margin-bottom: 12px; line-height: 1.4; }
+    .spectrum-poles span { max-width: 44%; }
+    .spectrum-poles span:last-child { text-align: right; }
+    input[type=range] { width: 100%; accent-color: var(--terracotta); cursor: pointer; }
+    .spectrum-value { text-align: center; font-size: 0.82rem; font-weight: 600; color: var(--terracotta); margin-top: 8px; height: 20px; }
+
+    .quiz-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 36px; }
+    .quiz-back { font-size: 0.82rem; color: var(--text-light); background: none; border: none; cursor: pointer; padding: 8px 0; }
+    .quiz-back:hover { color: var(--text); }
+    .quiz-next { font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; padding: 12px 30px; background: var(--terracotta); color: white; border: none; border-radius: 50px; cursor: pointer; transition: background 0.2s; }
+    .quiz-next:hover { background: #a85e3d; }
+    .quiz-next:disabled { background: #ccc; cursor: default; }
+
+    /* ── WAITING ── */
+    .waiting { max-width: 520px; margin: 0 auto; padding: 80px 24px; text-align: center; }
+    .waiting-icon { font-size: 3rem; margin-bottom: 20px; }
+    .waiting h2 { font-family: 'Playfair Display', serif; font-size: 1.9rem; margin-bottom: 14px; }
+    .waiting p { font-size: 0.88rem; color: var(--text-light); line-height: 1.7; margin-bottom: 28px; }
+    .share-box { background: var(--warm-white); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 24px; text-align: left; }
+    .share-box-label { font-size: 0.75rem; font-weight: 600; color: var(--text-light); margin-bottom: 8px; }
+    .share-url { font-family: monospace; font-size: 0.78rem; background: var(--cream); padding: 8px 12px; border-radius: 6px; color: var(--sea); word-break: break-all; }
+    .waiting-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary { font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; padding: 12px 28px; background: var(--terracotta); color: white; border: none; border-radius: 50px; cursor: pointer; transition: background 0.2s; }
+    .btn-primary:hover { background: #a85e3d; }
+    .btn-secondary { font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 500; padding: 12px 24px; background: white; color: var(--text-light); border: 1.5px solid var(--border); border-radius: 50px; cursor: pointer; transition: all 0.2s; }
+    .btn-secondary:hover { border-color: var(--text-light); color: var(--text); }
+    #reveal-msg { font-size: 0.78rem; color: var(--text-light); margin-top: 10px; min-height: 20px; }
+
+    /* ── RESULTS ── */
+    .results-wrap { max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+    .results-hero { text-align: center; margin-bottom: 48px; }
+    .results-hero h2 { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 8px; }
+    .results-hero p { font-size: 0.88rem; color: var(--text-light); }
+    .results-actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+
+    /* Profile match */
+    .match-section { background: var(--warm-white); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-bottom: 44px; }
+    .match-section-title { font-family: 'Playfair Display', serif; font-size: 1.15rem; margin-bottom: 20px; }
+    .profiles-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .profile-col { padding: 16px; border-radius: 10px; }
+    .profile-col.rafael { background: #EBF4FB; }
+    .profile-col.ana { background: #F5ECF1; }
+    .profile-col-name { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 10px; }
+    .profile-col.rafael .profile-col-name { color: var(--sea); }
+    .profile-col.ana .profile-col-name { color: var(--wine); }
+    .profile-tag { display: inline-block; font-size: 0.74rem; padding: 3px 9px; border-radius: 20px; margin: 2px; }
+    .rafael .profile-tag { background: rgba(74,126,165,0.15); color: var(--sea); }
+    .ana .profile-tag { background: rgba(122,41,66,0.12); color: var(--wine); }
+    .match-dim { margin-bottom: 12px; }
+    .match-dim-label { display: flex; justify-content: space-between; font-size: 0.76rem; margin-bottom: 4px; color: var(--text-light); }
+    .match-dim-label strong { color: var(--terracotta); }
+    .match-track { height: 5px; background: var(--border); border-radius: 3px; }
+    .match-fill { height: 100%; background: linear-gradient(90deg, var(--terracotta), var(--wine)); border-radius: 3px; transition: width 0.8s ease; }
+
+    /* Destinations */
+    .dest-section-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 6px; }
+    .dest-section-sub { font-size: 0.84rem; color: var(--text-light); margin-bottom: 28px; line-height: 1.6; }
+    .loading-state { text-align: center; padding: 56px 24px; }
+    .spinner { width: 38px; height: 38px; border: 3px solid var(--border); border-top-color: var(--terracotta); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 18px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state p { font-size: 0.88rem; color: var(--text-light); }
+
+    .destinations-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
+    @media (max-width: 660px) { .destinations-grid { grid-template-columns: 1fr; } }
+
+    .dest-card { background: var(--warm-white); border: 1.5px solid var(--border); border-radius: 18px; overflow: hidden; transition: box-shadow 0.2s; }
+    .dest-card:hover { box-shadow: 0 10px 40px rgba(44,37,32,0.12); }
+    .dest-card.top-pick { border-color: var(--terracotta); }
+
+    .dest-card-top { padding: 22px 22px 16px; }
+    .dest-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .dest-flag-name { display: flex; align-items: center; gap: 10px; }
+    .dest-flag { font-size: 2rem; }
+    .dest-name { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 600; line-height: 1.2; }
+    .dest-country { font-size: 0.74rem; color: var(--text-light); margin-top: 2px; }
+    .dest-badge { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 9px; border-radius: 6px; white-space: nowrap; flex-shrink: 0; }
+    .badge-br { background: #EBF4FB; color: var(--sea); }
+    .badge-intl { background: #EEF5EC; color: var(--olive); }
+    .badge-surprise { background: #F9EDE8; color: var(--terracotta); }
+
+    .dest-tagline { font-size: 0.82rem; font-style: italic; color: var(--text-light); margin-bottom: 14px; }
+    .dest-why { font-size: 0.83rem; line-height: 1.65; color: var(--text); padding: 14px; background: #FDF8F4; border-radius: 10px; border-left: 3px solid var(--terracotta); margin-bottom: 0; }
+    .dest-why-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 5px; }
+
+    /* Guide sections */
+    .dest-guide { border-top: 1px solid var(--border); }
+    .guide-toggle { width: 100%; background: none; border: none; cursor: pointer; padding: 14px 22px; display: flex; align-items: center; justify-content: space-between; font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 600; color: var(--text-light); transition: background 0.15s; }
+    .guide-toggle:hover { background: var(--cream); }
+    .guide-toggle-icon { font-size: 0.7rem; transition: transform 0.2s; }
+    .guide-toggle.open .guide-toggle-icon { transform: rotate(180deg); }
+
+    .guide-content { display: none; padding: 0 22px 20px; }
+    .guide-content.open { display: block; }
+
+    .guide-block { margin-bottom: 16px; }
+    .guide-block:last-child { margin-bottom: 0; }
+    .guide-block-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--olive); margin-bottom: 8px; }
+    .guide-item { display: flex; gap: 8px; font-size: 0.8rem; color: var(--text); line-height: 1.5; margin-bottom: 6px; }
+    .guide-item-icon { flex-shrink: 0; }
+    .guide-meta-row { display: flex; gap: 16px; flex-wrap: wrap; padding-top: 12px; border-top: 1px solid var(--border); }
+    .guide-meta { font-size: 0.75rem; color: var(--text-light); }
+    .guide-meta strong { color: var(--text); font-weight: 600; }
+
+    /* ── RUPTURA ── */
+    .ruptura-strip { background: linear-gradient(135deg, #3D2B1F, #6B4A2E); color: #F5D9B8; font-size: 0.69rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 9px 22px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .ruptura-strip-msg { font-weight: 400; font-size: 0.75rem; opacity: 0.88; font-style: italic; letter-spacing: 0; text-transform: none; }
+    .dest-card.ruptura { border-color: #8C6340; }
+
+    /* ── VIEWER TOGGLE ── */
+    .viewer-toggle { display: flex; align-items: center; gap: 8px; justify-content: center; margin-bottom: 28px; flex-wrap: wrap; }
+    .viewer-toggle-label { font-size: 0.78rem; color: var(--text-light); }
+    .viewer-btn { font-size: 0.8rem; padding: 7px 18px; border-radius: 50px; border: 1.5px solid var(--border); background: white; cursor: pointer; transition: all 0.15s; font-family: 'Inter', sans-serif; font-weight: 500; }
+    .viewer-btn.active.rafael-active { border-color: var(--sea); background: #EBF4FB; color: var(--sea); font-weight: 600; }
+    .viewer-btn.active.ana-active { border-color: var(--wine); background: #F5ECF1; color: var(--wine); font-weight: 600; }
+
+    /* ── REACTIONS ── */
+    .reactions-section { border-top: 1px solid var(--border); padding: 14px 22px 16px; }
+    .reactions-label { font-size: 0.69rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; }
+    .reactions-row { display: flex; gap: 8px; }
+    .reaction-btn { background: var(--cream); border: 1.5px solid var(--border); border-radius: 50px; padding: 6px 14px; font-size: 0.8rem; cursor: pointer; transition: all 0.15s; font-family: 'Inter', sans-serif; }
+    .reaction-btn:hover { border-color: var(--terracotta); }
+    .reaction-btn.active-heart { border-color: #C17353; background: #FEF0EA; }
+    .reaction-btn.active-meh { border-color: #B5A050; background: #FDFAED; }
+    .reaction-btn.active-no { border-color: #999; background: #F5F5F5; }
+    .match-banner { margin-top: 10px; font-size: 0.78rem; font-weight: 600; padding: 8px 12px; background: #EEF5EC; color: var(--olive); border-radius: 8px; text-align: center; display: none; }
+    .match-banner.visible { display: block; }
+    .match-banner.double-heart { background: #FEF0EA; color: var(--terracotta); }
+
+    /* ── EXPLORAR BUTTON ── */
+    .explorar-btn { display: block; width: calc(100% - 44px); margin: 0 22px 18px; padding: 11px; background: var(--olive); color: white; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: background 0.2s; text-align: center; }
+    .explorar-btn:hover { background: #556248; }
+
+    /* ── API KEY PROMPT ── */
+    .key-prompt-card { grid-column:1/-1; background:var(--warm-white); border:1.5px solid var(--border); border-radius:18px; padding:48px 36px; text-align:center; max-width:520px; margin:0 auto; }
+    .key-prompt-icon { font-size:2.4rem; margin-bottom:16px; }
+    .key-prompt-card h3 { font-family:'Playfair Display',serif; font-size:1.45rem; margin-bottom:12px; }
+    .key-prompt-card > p { font-size:0.86rem; color:var(--text-light); line-height:1.7; margin-bottom:26px; max-width:380px; margin-left:auto; margin-right:auto; }
+    .key-prompt-form { display:flex; gap:8px; max-width:420px; margin:0 auto 14px; }
+    .key-prompt-form input { flex:1; padding:10px 14px; border:1.5px solid var(--border); border-radius:8px; font-size:0.86rem; outline:none; font-family:'Inter',sans-serif; }
+    .key-prompt-form input:focus { border-color:var(--terracotta); }
+    .key-prompt-form button { background:var(--terracotta); color:white; border:none; padding:10px 20px; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer; white-space:nowrap; font-family:'Inter',sans-serif; transition:background 0.2s; }
+    .key-prompt-form button:hover { background:#a85e3d; }
+    .key-prompt-form button:disabled { background:#ccc; cursor:default; }
+    .key-prompt-links { font-size:0.75rem; color:var(--text-light); }
+    .key-prompt-links a { color:var(--sea); text-decoration:none; }
+    .key-prompt-links a:hover { text-decoration:underline; }
+    .key-prompt-error { color:#c0392b; font-size:0.77rem; margin-top:8px; min-height:16px; }
+
+    /* ── FALLBACK BANNER ── */
+    .fallback-banner { grid-column:1/-1; background:#FDF8F4; border:1px solid var(--border); border-radius:10px; padding:13px 18px; text-align:center; font-size:0.78rem; color:var(--text-light); margin-bottom:8px; line-height:1.6; }
+    .fallback-banner a { color:var(--terracotta); text-decoration:none; font-weight:600; cursor:pointer; }
+    .fallback-banner a:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">✈ Viagem com Ana</a>
+  <a href="/" class="nav-back">← Dashboard</a>
+</nav>
+
+<!-- TELA 1: Boas-vindas -->
+<div class="screen active" id="screen-welcome">
+  <div class="welcome">
+    <p class="welcome-eyebrow">Descoberta · Perfil · Destino</p>
+    <h1>Qual viagem é <em>a nossa</em>?</h1>
+    <p class="intro">Antes de escolher um destino, vamos entender quem vocês são como viajantes. Rafael e Ana respondem separadamente — o sistema cruza os perfis e sugere lugares que talvez vocês nunca imaginariam, incluindo destinos nacionais.</p>
+
+    <div class="who-cards">
+      <div class="who-card" onclick="selectWho('rafael', this)">
+        <div class="who-avatar">👨</div>
+        <div class="who-name">Rafael</div>
+        <div class="who-status" id="rafael-status">Ainda não respondeu</div>
+        <span class="redo-link" id="rafael-redo" style="display:none" onclick="event.stopPropagation(); redoProfile('rafael')">Refazer meu perfil</span>
+      </div>
+      <div class="who-card" onclick="selectWho('ana', this)">
+        <div class="who-avatar">👩</div>
+        <div class="who-name">Ana</div>
+        <div class="who-status" id="ana-status">Ainda não respondeu</div>
+        <span class="redo-link" id="ana-redo" style="display:none" onclick="event.stopPropagation(); redoProfile('ana')">Refazer meu perfil</span>
+      </div>
+    </div>
+
+    <button class="start-btn" id="start-btn" onclick="startQuiz()">Começar →</button>
+
+    <div class="both-done-cta" id="both-done-cta">
+      <p>Os dois perfis já foram preenchidos. Pronto para ver os destinos?</p>
+      <button class="reveal-big-btn" onclick="showResults()">Ver destinos recomendados ✦</button>
+    </div>
+  </div>
+</div>
+
+<!-- TELA 2: Questionário -->
+<div class="screen" id="screen-quiz">
+  <div class="quiz-wrap">
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="progress-fill"></div></div>
+    <div class="quiz-meta">
+      <div class="quiz-who-label" id="quiz-who-label"></div>
+      <div class="quiz-step-label" id="quiz-step-label"></div>
+    </div>
+    <div id="question-container"></div>
+    <div class="quiz-nav">
+      <button class="quiz-back" id="quiz-back-btn" onclick="prevQuestion()">← Voltar</button>
+      <button class="quiz-next" id="quiz-next-btn" onclick="nextQuestion()" disabled>Continuar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TELA 3: Aguardando parceiro -->
+<div class="screen" id="screen-waiting">
+  <div class="waiting">
+    <div class="waiting-icon">🌿</div>
+    <h2>Perfil salvo!</h2>
+    <p>Agora é a vez da outra pessoa. Quando os dois tiverem respondido, o sistema cruza os perfis e revela os destinos ideais para vocês.</p>
+    <div class="share-box">
+      <div class="share-box-label">Link para a outra pessoa preencher</div>
+      <div class="share-url">https://viagem-ana.netlify.app/descobrir.html</div>
+    </div>
+    <div class="waiting-actions">
+      <button class="btn-primary" onclick="checkAndReveal()">Já preenchemos os dois →</button>
+      <button class="btn-secondary" onclick="showScreen('screen-welcome')">Voltar ao início</button>
+    </div>
+    <div id="reveal-msg"></div>
+  </div>
+</div>
+
+<!-- TELA 4: Resultados -->
+<div class="screen" id="screen-results">
+  <div class="results-wrap">
+    <div class="results-hero">
+      <h2>A viagem de Rafael & Ana</h2>
+      <p>Destinos gerados a partir dos perfis individuais de vocês dois.</p>
+      <div class="results-actions">
+        <button class="btn-secondary" onclick="showScreen('screen-welcome')">← Refazer perfis</button>
+      </div>
+    </div>
+
+    <div class="viewer-toggle">
+      <span class="viewer-toggle-label">Você está reagindo como:</span>
+      <button class="viewer-btn rafael-active" id="viewer-btn-rafael" onclick="setViewer('rafael')">👨 Rafael</button>
+      <button class="viewer-btn ana-active" id="viewer-btn-ana" onclick="setViewer('ana')">👩 Ana</button>
+    </div>
+
+    <div class="match-section">
+      <div class="match-section-title">Perfis cruzados</div>
+      <div class="profiles-row">
+        <div class="profile-col rafael"><div class="profile-col-name">Rafael</div><div id="rafael-tags"></div></div>
+        <div class="profile-col ana"><div class="profile-col-name">Ana</div><div id="ana-tags"></div></div>
+      </div>
+      <div id="match-bars"></div>
+    </div>
+
+    <div class="dest-section-title">Destinos para vocês</div>
+    <div class="dest-section-sub">Ordenados por compatibilidade. Inclui opções que provavelmente não apareceriam numa busca comum — e pelo menos dois destinos nacionais.</div>
+
+    <div class="loading-state" id="dest-loading">
+      <div class="spinner"></div>
+      <p>Cruzando perfis e gerando recomendações personalizadas...</p>
+    </div>
+    <div class="destinations-grid" id="destinations-grid" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+// ── PERGUNTAS ────────────────────────────────────────────────────────────────
+
+const QUESTIONS = [
+  {
+    id: 'escape',
+    category: 'Ponto de partida',
+    text: 'O que você mais quer deixar para trás nessa viagem?',
+    sub: 'Seja honesto. Essa resposta define muito do que o destino precisa oferecer.',
+    type: 'single',
+    options: [
+      { emoji: '📱', label: 'A sensação de estar sempre disponível', desc: 'Notificações, urgências, a vida online' },
+      { emoji: '🏙️', label: 'O barulho e o ritmo acelerado', desc: 'Trânsito, compromissos, rotina urbana' },
+      { emoji: '🧠', label: 'O peso das decisões e responsabilidades', desc: 'Quero que outros cuidem de tudo por um tempo' },
+      { emoji: '😶', label: 'A minha versão cotidiana de mim mesmo', desc: 'Quero ser outra pessoa por alguns dias' },
+    ]
+  },
+  {
+    id: 'feel',
+    category: 'Sentimento central',
+    text: 'Qual sensação você mais quer ter durante essa viagem?',
+    sub: 'Escolha a que ressoa mais fundo — não a que "parece certa".',
+    type: 'single',
+    cols: 2,
+    options: [
+      { emoji: '🤏', label: 'Pequeno diante de algo imenso', desc: 'Natureza, arquitetura, história' },
+      { emoji: '🏡', label: 'Em casa num lugar desconhecido', desc: 'Pertencimento, acolhimento, conforto' },
+      { emoji: '🔍', label: 'Curioso sobre tudo ao redor', desc: 'Descoberta, surpresa, aprendizado' },
+      { emoji: '😮‍💨', label: 'Completamente desacelerado', desc: 'Sem agenda, sem pressa, sem notificações' },
+      { emoji: '🥂', label: 'Celebrando e com leveza', desc: 'Alegria presente, momentos especiais' },
+      { emoji: '🪷', label: 'Em silêncio e presença', desc: 'Introspecção, contato com o essencial' },
+    ]
+  },
+  {
+    id: 'pace',
+    category: 'Ritmo',
+    text: 'Como você imagina os seus dias nessa viagem?',
+    sub: 'Pense num dia comum, não no melhor dia.',
+    type: 'single',
+    options: [
+      { emoji: '☀️', label: 'Acordar cedo, ver muito, dormir cansado-feliz', desc: 'Alta energia, agenda rica, muito conteúdo' },
+      { emoji: '🌤️', label: 'Uma coisa especial por dia, o resto fluindo', desc: 'Equilíbrio: tem plano, mas tem espaço' },
+      { emoji: '🌿', label: 'Sem agenda — ver o que o dia traz', desc: 'Lentidão, espontaneidade, presença' },
+      { emoji: '🛁', label: 'Acordar tarde, comer bem, não fazer quase nada', desc: 'Descanso como objetivo central' },
+    ]
+  },
+  {
+    id: 'unknown',
+    category: 'Relação com o novo',
+    text: 'Quanto o desconhecido faz parte da sua viagem ideal?',
+    sub: 'Não há resposta certa — é sobre quem você é de verdade.',
+    type: 'spectrum',
+    min: 'Preciso saber o que esperar: hotel confirmado, roteiro definido',
+    max: 'O melhor de uma viagem é o que não estava planejado',
+    key: 'unknown'
+  },
+  {
+    id: 'discovery',
+    category: 'O que você vai buscar',
+    text: 'O que você mais quer encontrar nessa viagem?',
+    sub: 'Pode escolher a que vier primeiro — não pense muito.',
+    type: 'single',
+    cols: 2,
+    options: [
+      { emoji: '🍽️', label: 'Sabores que nunca provei', desc: 'Gastronomia como experiência central' },
+      { emoji: '🗺️', label: 'Histórias e culturas diferentes da minha', desc: 'Povo, tradições, jeito de viver' },
+      { emoji: '🏔️', label: 'Paisagens que me param no meio do caminho', desc: 'Beleza visual como objetivo' },
+      { emoji: '💑', label: 'Nós dois, diferente do que somos no dia a dia', desc: 'Conexão, descoberta do casal' },
+      { emoji: '🎲', label: 'A surpresa de não saber o que vem', desc: 'Aventura, espontaneidade' },
+      { emoji: '📖', label: 'Entender um lugar de verdade', desc: 'Profundidade, não superfície' },
+    ]
+  },
+  {
+    id: 'nature_city',
+    category: 'Ambiente',
+    text: 'Onde você se sente mais vivo quando viaja?',
+    sub: '',
+    type: 'spectrum',
+    min: 'Cidades — ruas, restaurantes, museus, arquitetura, movimento',
+    max: 'Natureza — silêncio, paisagens, trilhas, animais, ar puro',
+    key: 'nature_city'
+  },
+  {
+    id: 'food',
+    category: 'Gastronomia',
+    text: 'Qual é o papel da comida numa boa viagem para você?',
+    sub: '',
+    type: 'single',
+    options: [
+      { emoji: '🎯', label: 'É o centro — organizo a viagem em torno de restaurantes', desc: 'Reservo meses antes, pesquiso chefs locais' },
+      { emoji: '🌿', label: 'É importante, mas não vivo só disso', desc: 'Gosto de comer bem quando aparece a chance' },
+      { emoji: '🏔️', label: 'A paisagem e a experiência valem mais que o prato', desc: 'Comer bem é bônus, não critério' },
+      { emoji: '🏡', label: 'Quero comer o que os locais comem, não o que é famoso', desc: 'Autenticidade acima de tudo' },
+    ]
+  },
+  {
+    id: 'comfort',
+    category: 'Conforto',
+    text: 'O que o seu hotel ideal é para você?',
+    sub: 'O hotel precisa ser o quê nessa viagem?',
+    type: 'single',
+    cols: 2,
+    options: [
+      { emoji: '🏰', label: 'Parte da experiência', desc: 'O lugar em si é um destino — design, história, vista' },
+      { emoji: '🛌', label: 'Conforto garantido acima de tudo', desc: 'Cama boa, silêncio, serviço impecável' },
+      { emoji: '🏡', label: 'Com personalidade e localização', desc: 'Pequeno, charmoso, bem posicionado' },
+      { emoji: '⚡', label: 'Funcional — durmo lá e pronto', desc: 'O que importa é o que está fora do hotel' },
+    ]
+  },
+  {
+    id: 'budget',
+    category: 'Investimento',
+    text: 'Qual faixa de investimento faz sentido para essa viagem?',
+    sub: 'Por pessoa, tudo incluído: voo + hospedagem + experiências.',
+    type: 'single',
+    cols: 2,
+    options: [
+      { emoji: '🌿', label: 'Até R$ 8.000', desc: 'Viagem nacional bem feita ou internacional econômica' },
+      { emoji: '✈️', label: 'R$ 8k – R$ 20k', desc: 'Internacional na econômica, boa hospedagem' },
+      { emoji: '🥂', label: 'R$ 20k – R$ 45k', desc: 'Internacional confortável, hotéis especiais' },
+      { emoji: '👑', label: 'Acima de R$ 45k', desc: 'Executiva, hotéis excepcionais, sem concessões' },
+    ]
+  },
+  {
+    id: 'duration',
+    category: 'Tempo',
+    text: 'Quantos dias você quer (e consegue) dedicar a essa viagem?',
+    sub: '',
+    type: 'single',
+    cols: 2,
+    options: [
+      { emoji: '⚡', label: '5 a 7 dias', desc: 'Curto, intenso e focado' },
+      { emoji: '🌤️', label: '8 a 12 dias', desc: 'Equilibrado — dá pra respirar' },
+      { emoji: '🌊', label: '13 a 18 dias', desc: 'Generoso — tem ritmo e profundidade' },
+      { emoji: '🗺️', label: 'Mais de 18 dias', desc: 'Aventura longa — imersão total' },
+    ]
+  },
+  {
+    id: 'bubble',
+    category: 'Sair da bolha',
+    text: 'Qual dessas opções te dá vontade — mesmo que esteja fora da sua zona de conforto?',
+    sub: 'Essa é a pergunta mais importante do questionário. Seja honesto.',
+    type: 'single',
+    options: [
+      { emoji: '🏜️', label: 'Um deserto, uma imensidão, um silêncio imenso', desc: 'Natureza extrema, longe do wifi, longe de tudo' },
+      { emoji: '🌏', label: 'Uma cultura completamente diferente da minha', desc: 'Japão, Marrocos, Índia, Geórgia — outro mundo de verdade' },
+      { emoji: '🏡', label: 'Um vilarejo, uma fazenda, um ritmo de outro século', desc: 'Isolado, autêntico, lento, sem turismo de massa' },
+      { emoji: '🌿', label: 'Natureza selvagem do Brasil que nunca explorei', desc: 'Jalapão, Pantanal, Lençóis, Chapada — o Brasil desconhecido' },
+    ]
+  },
+  {
+    id: 'memory',
+    category: 'Memória',
+    text: 'Daqui a 10 anos, como você quer lembrar dessa viagem?',
+    sub: 'A primeira resposta que vier é a mais verdadeira.',
+    type: 'single',
+    options: [
+      { emoji: '🌅', label: 'Como o lugar mais bonito que já vi na vida', desc: 'Paisagem, estética, imagem que ficou' },
+      { emoji: '🧠', label: 'Como quando aprendi algo sobre o mundo e sobre mim', desc: 'Cultura, descoberta, visão ampliada' },
+      { emoji: '❤️', label: 'Como quando me reconectei com quem amo', desc: 'Conexão, amor, momentos presentes' },
+      { emoji: '🎯', label: 'Como quando saí da minha bolha de verdade', desc: 'Coragem, ruptura, transformação' },
+    ]
+  },
+];
+
+// ── ESTADO ────────────────────────────────────────────────────────────────────
+
+let currentWho = null;
+let currentStep = 0;
+let answers = {};
+
+function getProfiles() {
+  return {
+    rafael: JSON.parse(localStorage.getItem('profile_rafael') || 'null'),
+    ana: JSON.parse(localStorage.getItem('profile_ana') || 'null'),
+  };
+}
+
+// ── BOAS-VINDAS ───────────────────────────────────────────────────────────────
+
+function init() {
+  const p = getProfiles();
+  if (p.rafael) {
+    document.getElementById('rafael-status').textContent = '✓ Perfil preenchido';
+    document.getElementById('rafael-status').className = 'who-status done';
+    document.getElementById('rafael-redo').style.display = 'block';
+  }
+  if (p.ana) {
+    document.getElementById('ana-status').textContent = '✓ Perfil preenchido';
+    document.getElementById('ana-status').className = 'who-status done';
+    document.getElementById('ana-redo').style.display = 'block';
+  }
+  if (p.rafael && p.ana) {
+    document.getElementById('both-done-cta').style.display = 'block';
+  }
+}
+init();
+
+function selectWho(who, card) {
+  document.querySelectorAll('.who-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  currentWho = who;
+  const btn = document.getElementById('start-btn');
+  btn.style.display = 'block';
+  btn.textContent = 'Começar meu perfil →';
+}
+
+function redoProfile(who) {
+  currentWho = who;
+  document.querySelectorAll('.who-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector(`.who-card:nth-child(${who === 'rafael' ? 1 : 2})`).classList.add('selected');
+  document.getElementById('start-btn').style.display = 'block';
+  answers = {};
+  currentStep = 0;
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+function startQuiz() {
+  if (!currentWho) return;
+  answers = {};
+  currentStep = 0;
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+function showResults() {
+  showScreen('screen-results');
+  renderResults();
+}
+
+// ── QUIZ ──────────────────────────────────────────────────────────────────────
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[currentStep];
+  const pct = (currentStep / QUESTIONS.length * 100).toFixed(0);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('quiz-who-label').textContent = currentWho === 'rafael' ? 'Rafael' : 'Ana';
+  document.getElementById('quiz-step-label').textContent = `${currentStep + 1} / ${QUESTIONS.length}`;
+  document.getElementById('quiz-back-btn').style.visibility = currentStep === 0 ? 'hidden' : 'visible';
+  const nextBtn = document.getElementById('quiz-next-btn');
+  nextBtn.textContent = currentStep === QUESTIONS.length - 1 ? 'Salvar meu perfil ✓' : 'Continuar →';
+
+  const saved = answers[q.id];
+  let html = `<div class="question-block">
+    <div class="question-category">${q.category}</div>
+    <div class="question-text">${q.text}</div>
+    ${q.sub ? `<div class="question-sub">${q.sub}</div>` : ''}`;
+
+  if (q.type === 'spectrum') {
+    const val = saved !== undefined ? saved : 50;
+    html += `<div class="spectrum">
+      <div class="spectrum-poles"><span>${q.min}</span><span>${q.max}</span></div>
+      <input type="range" min="0" max="100" value="${val}" id="sp-${q.key}"
+        oninput="answers['${q.id}']=parseInt(this.value); document.getElementById('sv-${q.key}').textContent=specLabel(this.value)">
+      <div class="spectrum-value" id="sv-${q.key}">${specLabel(val)}</div>
+    </div>`;
+    if (answers[q.id] === undefined) answers[q.id] = 50;
+  } else {
+    const cols = q.cols === 2 ? ' cols-2' : '';
+    html += `<div class="options-grid${cols}">`;
+    q.options.forEach((opt, i) => {
+      const sel = q.type === 'multi' ? (Array.isArray(saved) && saved.includes(i)) : saved === i;
+      html += `<button class="option-btn${sel ? ' selected' : ''}" onclick="pick('${q.id}',${i},'${q.type}',this)">
+        <span class="option-emoji">${opt.emoji}</span>
+        <span class="option-label">${opt.label}</span>
+        ${opt.desc ? `<span class="option-desc">${opt.desc}</span>` : ''}
+      </button>`;
+    });
+    html += '</div>';
+  }
+
+  html += '</div>';
+  document.getElementById('question-container').innerHTML = html;
+  updateNext();
+}
+
+function specLabel(v) {
+  v = parseInt(v);
+  if (v <= 15) return 'Bem mais para o primeiro lado';
+  if (v <= 38) return 'Um pouco mais para o primeiro lado';
+  if (v <= 62) return 'Equilibrado entre os dois';
+  if (v <= 84) return 'Um pouco mais para o segundo lado';
+  return 'Bem mais para o segundo lado';
+}
+
+function pick(qId, idx, type, btn) {
+  if (type === 'multi') {
+    if (!Array.isArray(answers[qId])) answers[qId] = [];
+    const arr = answers[qId], pos = arr.indexOf(idx);
+    if (pos === -1) { if (arr.length >= 2) return; arr.push(idx); btn.classList.add('selected'); }
+    else { arr.splice(pos, 1); btn.classList.remove('selected'); }
+  } else {
+    answers[qId] = idx;
+    document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  }
+  updateNext();
+}
+
+function updateNext() {
+  const q = QUESTIONS[currentStep], a = answers[q.id];
+  const ok = q.type === 'spectrum' ? true : q.type === 'multi' ? (Array.isArray(a) && a.length > 0) : a !== undefined;
+  document.getElementById('quiz-next-btn').disabled = !ok;
+}
+
+function nextQuestion() {
+  if (currentStep < QUESTIONS.length - 1) { currentStep++; renderQuestion(); }
+  else saveProfile();
+}
+
+function prevQuestion() {
+  if (currentStep > 0) { currentStep--; renderQuestion(); }
+}
+
+function saveProfile() {
+  localStorage.setItem('profile_' + currentWho, JSON.stringify({ who: currentWho, answers, savedAt: new Date().toISOString() }));
+  const other = currentWho === 'rafael' ? 'ana' : 'rafael';
+  if (getProfiles()[other]) { showScreen('screen-results'); renderResults(); }
+  else showScreen('screen-waiting');
+}
+
+function checkAndReveal() {
+  const p = getProfiles();
+  if (p.rafael && p.ana) { showScreen('screen-results'); renderResults(); }
+  else {
+    const miss = !p.rafael ? 'Rafael' : 'Ana';
+    document.getElementById('reveal-msg').textContent = miss + ' ainda não preencheu o perfil.';
+  }
+}
+
+// ── RESULTADOS ────────────────────────────────────────────────────────────────
+
+function renderResults() {
+  const p = getProfiles();
+  if (!p.rafael || !p.ana) return;
+  renderTags(p.rafael, 'rafael-tags');
+  renderTags(p.ana, 'ana-tags');
+  renderMatch(p.rafael, p.ana);
+  generateDests(p.rafael, p.ana);
+}
+
+function getOptionLabel(qId, ans) {
+  const q = QUESTIONS.find(x => x.id === qId);
+  if (!q) return null;
+  if (q.type === 'spectrum') return specLabel(ans);
+  if (q.type === 'multi') return Array.isArray(ans) ? ans.map(i => q.options[i]?.label).filter(Boolean).join(' + ') : null;
+  return q.options[ans]?.label || null;
+}
+
+function renderTags(profile, el) {
+  const keys = ['feel', 'pace', 'discovery', 'bubble', 'memory'];
+  document.getElementById(el).innerHTML = keys.map(k => {
+    const l = getOptionLabel(k, profile.answers[k]);
+    return l ? `<span class="profile-tag">${l}</span>` : '';
+  }).join('');
+}
+
+function renderMatch(r, a) {
+  const dims = [
+    { label: 'Relação com o desconhecido', qId: 'unknown', spec: true },
+    { label: 'Natureza vs. Cidade', qId: 'nature_city', spec: true },
+    { label: 'Ritmo desejado', qId: 'pace' },
+    { label: 'O que vão buscar', qId: 'discovery' },
+  ];
+  document.getElementById('match-bars').innerHTML = dims.map(d => {
+    const ra = r.answers[d.qId], aa = a.answers[d.qId];
+    const match = d.spec ? Math.round(100 - Math.abs(parseInt(ra||50) - parseInt(aa||50))) : (ra === aa ? 100 : 55);
+    return `<div class="match-dim">
+      <div class="match-dim-label"><span>${d.label}</span><strong>${match}% alinhados</strong></div>
+      <div class="match-track"><div class="match-fill" style="width:${match}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function buildSummary(p) {
+  return QUESTIONS.map(q => {
+    const l = getOptionLabel(q.id, p.answers[q.id]);
+    return l ? `- ${q.category}: ${l}` : null;
+  }).filter(Boolean).join('\n');
+}
+
+async function generateDests(rp, ap) {
+  document.getElementById('dest-loading').style.display = 'none';
+  document.getElementById('destinations-grid').style.display = 'none';
+
+  await callGeminiForDests(rp, ap);
+}
+
+function showKeyPrompt(rp, ap) {
+  window._pendingProfiles = { rp, ap };
+  const grid = document.getElementById('destinations-grid');
+  grid.style.display = 'grid';
+  grid.innerHTML = `
+    <div class="key-prompt-card">
+      <div class="key-prompt-icon">✦</div>
+      <h3>Recomendações personalizadas com IA</h3>
+      <p>Para sugerir destinos do mundo inteiro com base nos perfis de vocês — sem lista fixa — precisamos da chave do Gemini (Google). É gratuita.</p>
+      <div class="key-prompt-form">
+        <input type="password" id="dest-api-key" placeholder="AIza..." autocomplete="off"
+          onkeydown="if(event.key==='Enter') saveDestKeyAndGenerate()" />
+        <button id="dest-key-btn" onclick="saveDestKeyAndGenerate()">Gerar →</button>
+      </div>
+      <div class="key-prompt-error" id="dest-key-error"></div>
+      <div class="key-prompt-links">
+        Obtenha grátis em <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com → Get API Key</a>
+        &nbsp;·&nbsp;
+        <a onclick="showFallbackWithBanner()">Ver sugestões de exemplo</a>
+      </div>
+    </div>`;
+}
+
+function saveDestKeyAndGenerate() {
+  const input = document.getElementById('dest-api-key');
+  if (!input) return;
+  const key = input.value.trim();
+  const errEl = document.getElementById('dest-key-error');
+  const btn = document.getElementById('dest-key-btn');
+  if (!key || !key.startsWith('AIza')) {
+    if (errEl) errEl.textContent = 'Chave inválida — deve começar com AIza...';
+    input.style.borderColor = '#c0392b';
+    return;
+  }
+  localStorage.setItem('gemini_api_key', key);
+  if (btn) { btn.disabled = true; btn.textContent = 'Gerando...'; }
+  document.getElementById('destinations-grid').style.display = 'none';
+  document.getElementById('dest-loading').style.display = 'block';
+  const { rp, ap } = window._pendingProfiles || {};
+  if (rp && ap) callGeminiForDests(rp, ap, key);
+}
+
+function showFallbackWithBanner() {
+  renderFallback(true);
+}
+
+async function callGeminiForDests(rp, ap) {
+  document.getElementById('dest-loading').style.display = 'block';
+  document.getElementById('destinations-grid').style.display = 'none';
+
+  // Build profile signal summary for the prompt
+  const rSummary = buildSummary(rp);
+  const aSummary = buildSummary(ap);
+
+  // Extract key signals for the prompt header
+  const budgetLabels = ['até R$ 8.000 (nacional/econômico)','R$ 8k–20k (econômico internacional)','R$ 20k–45k (confortável, hotéis especiais)','acima de R$ 45k (executiva, sem concessões)'];
+  const rBudget = budgetLabels[rp.answers?.budget] || '';
+  const aBudget = budgetLabels[ap.answers?.budget] || '';
+  const rNature = parseInt(rp.answers?.nature_city) || 50;
+  const aNature = parseInt(ap.answers?.nature_city) || 50;
+  const avgNature = Math.round((rNature + aNature) / 2);
+  const natureSig = avgNature > 65 ? 'preferência clara por natureza e paisagens' : avgNature < 35 ? 'preferência por cidades, gastronomia e cultura urbana' : 'equilíbrio entre natureza e cidade';
+
+  // Seed for variety (changes per profile combo)
+  const seed = Object.values(rp.answers||{}).concat(Object.values(ap.answers||{}))
+    .reduce((a,b) => a + (typeof b === 'number' ? b : 0), 0);
+  const seedNote = `[seed de variação: ${seed}]`;
+
+  const prompt = `Você é o melhor consultor de viagens do mundo — com conhecimento profundo de destinos obscuros, subestimados e transformadores em todos os continentes. Dois perfis foram preenchidos separadamente.
+
+${seedNote}
+
+PERFIL DE RAFAEL:
+${rSummary}
+Orçamento: ${rBudget}
+
+PERFIL DE ANA:
+${aSummary}
+Orçamento: ${aBudget}
+
+CONTEXTO COMBINADO:
+- Natureza vs. cidade: ${natureSig} (média dos dois)
+- É a primeira viagem internacional deles juntos
+- Querem conexão, romantismo e memórias que durem anos
+
+MISSÃO: Recomendar 6 destinos que façam SENTIDO PROFUNDO para esses dois perfis. Não seja genérico. Não seja seguro. Seja corajoso.
+
+REGRAS OBRIGATÓRIAS:
+1. Mínimo 2 destinos nacionais (Brasil) — PROIBIDO: Florianópolis, Fernando de Noronha como óbvio, Rio de Janeiro como destino principal
+2. Mínimo 1 destino internacional não-europeu e não-óbvio
+3. Máximo 2 destinos europeus
+4. COMPLETAMENTE PROIBIDO: Paris, Roma, Cancún, Miami, Maldivas, Nova York, Londres, Santorini, Bali, Dubai, Veneza, Barcelona, Amsterdam, Lisboa (muito óbvio para brasileiros)
+5. Mínimo 1 destino "type":"surprise" — algo que eles CERTAMENTE não consideraram, que rompe com qualquer expectativa
+6. O campo "why" deve citar DIRETAMENTE as respostas dos perfis — não pode ser genérico
+7. Os 6 destinos devem ser DIVERSIFICADOS entre si (não sugira 3 destinos de natureza se o perfil pede gastronomia)
+
+QUALIDADE DO "WHY":
+Errado: "Destino ideal para casais que buscam experiências únicas."
+Certo: "Rafael quer deixar para trás o barulho urbano e Ana quer se sentir pequena diante de algo imenso — [destino] entrega os dois no mesmo lugar, com [detalhe específico]."
+
+Responda APENAS com JSON válido, sem markdown, sem texto antes ou depois:
+{
+  "destinations": [
+    {
+      "flag": "emoji da bandeira nacional",
+      "name": "Nome do Destino (pode ser região, cidade ou combinação)",
+      "country": "País ou Estado",
+      "tagline": "Frase poética de até 8 palavras que capture a essência",
+      "type": "br | intl | surprise",
+      "why": "2-3 frases que citam DIRETAMENTE elementos dos perfis de Rafael e Ana",
+      "experiences": ["experiência concreta e específica 1", "experiência concreta 2", "experiência concreta 3"],
+      "stay": "Tipo de hospedagem ideal para o perfil + exemplo concreto",
+      "food": ["prato ou restaurante específico com contexto", "segundo prato ou experiência gastronômica"],
+      "tip": "Dica prática não-óbvia que a maioria dos viajantes não descobre",
+      "budget": "Faixa em BRL por pessoa (voo + hotel + experiências)",
+      "bestTime": "Melhor época e por quê"
+    }
+  ]
+}`;
+
+  try {
+    const res = await fetch(
+      '/api/ai',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 4096, temperature: 0.85 }
+        })
+      }
+    );
+    if (res.status === 400 || res.status === 403) {
+      // Chave inválida/expirada — limpar e usar scoring local
+
+      document.getElementById('dest-loading').style.display = 'none';
+      renderFallback(true, 'Chave Gemini inválida ou expirada — mostrando sugestões do perfil.');
+      return;
+    }
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.find(p => p.text)?.text || '';
+    const m = text.match(/\{[\s\S]*\}/);
+    if (!m) throw new Error('no json');
+    renderCards(JSON.parse(m[0]).destinations);
+  } catch (e) {
+    console.error(e);
+    renderFallback(true);
+  }
+}
+
+function renderCards(dests) {
+  window._destsCache = dests;
+  document.getElementById('dest-loading').style.display = 'none';
+  const grid = document.getElementById('destinations-grid');
+  grid.style.display = 'grid';
+  const badgeCls = { br: 'badge-br', intl: 'badge-intl', surprise: 'badge-surprise' };
+  const badgeLbl = { br: '🇧🇷 Nacional', intl: '🌍 Internacional', surprise: '✦ Fora da bolha' };
+
+  grid.innerHTML = dests.map((d, i) => {
+    const isRuptura = d.type === 'surprise';
+    return `
+    <div class="dest-card${i === 0 ? ' top-pick' : ''}${isRuptura ? ' ruptura' : ''}">
+      ${isRuptura ? `<div class="ruptura-strip">🔥 Fator Ruptura <span class="ruptura-strip-msg">— Você nunca pensaria nisso sozinho. Por isso está aqui.</span></div>` : ''}
+      <div class="dest-card-top">
+        <div class="dest-top-row">
+          <div class="dest-flag-name">
+            <div class="dest-flag">${d.flag}</div>
+            <div>
+              <div class="dest-name">${d.name}</div>
+              <div class="dest-country">${d.country}</div>
+            </div>
+          </div>
+          <span class="dest-badge ${badgeCls[d.type]||'badge-intl'}">${badgeLbl[d.type]||'🌍 Internacional'}</span>
+        </div>
+        <div class="dest-tagline">${d.tagline}</div>
+        <div class="dest-why">
+          <div class="dest-why-label">Por que faz sentido para vocês</div>
+          ${d.why}
+        </div>
+      </div>
+      <div class="dest-guide">
+        <button class="guide-toggle" onclick="toggleGuide(this)">
+          Ver guia completo
+          <span class="guide-toggle-icon">▼</span>
+        </button>
+        <div class="guide-content">
+          ${d.experiences ? `<div class="guide-block">
+            <div class="guide-block-title">Experiências para o perfil de vocês</div>
+            ${d.experiences.map(e => `<div class="guide-item"><span class="guide-item-icon">✦</span><span>${e}</span></div>`).join('')}
+          </div>` : ''}
+          ${d.stay ? `<div class="guide-block">
+            <div class="guide-block-title">Onde ficar</div>
+            <div class="guide-item"><span class="guide-item-icon">🛌</span><span>${d.stay}</span></div>
+          </div>` : ''}
+          ${d.food ? `<div class="guide-block">
+            <div class="guide-block-title">O que comer</div>
+            ${d.food.map(f => `<div class="guide-item"><span class="guide-item-icon">🍽️</span><span>${f}</span></div>`).join('')}
+          </div>` : ''}
+          ${d.tip ? `<div class="guide-block">
+            <div class="guide-block-title">Dica importante</div>
+            <div class="guide-item"><span class="guide-item-icon">💡</span><span>${d.tip}</span></div>
+          </div>` : ''}
+          <div class="guide-meta-row">
+            <div class="guide-meta"><strong>Investimento/pessoa:</strong> ${d.budget}</div>
+            <div class="guide-meta"><strong>Melhor época:</strong> ${d.bestTime}</div>
+          </div>
+        </div>
+      </div>
+      <div class="reactions-section">
+        <div class="reactions-label">Como você reagiu a esse destino?</div>
+        <div class="reactions-row">
+          <button class="reaction-btn" id="react-${i}-heart" onclick="react(${i},'heart')">❤️ Curti</button>
+          <button class="reaction-btn" id="react-${i}-meh" onclick="react(${i},'meh')">🤔 Talvez</button>
+          <button class="reaction-btn" id="react-${i}-no" onclick="react(${i},'no')">✗ Passa</button>
+        </div>
+        <div class="match-banner" id="match-banner-${i}"></div>
+      </div>
+      <button class="explorar-btn" onclick="exploreWithAI(${i})">Explorar com IA →</button>
+    </div>`;
+  }).join('');
+
+  // init viewer toggle state
+  setViewer(currentViewer, true);
+  // init all reaction UIs
+  setTimeout(() => updateAllReactionUIs(), 50);
+}
+
+function toggleGuide(btn) {
+  btn.classList.toggle('open');
+  const content = btn.nextElementSibling;
+  content.classList.toggle('open');
+}
+
+// ── VIEWER TOGGLE ─────────────────────────────────────────────────────────────
+let currentViewer = localStorage.getItem('current_viewer') || 'rafael';
+
+function setViewer(who, silent) {
+  currentViewer = who;
+  if (!silent) localStorage.setItem('current_viewer', who);
+  const btnR = document.getElementById('viewer-btn-rafael');
+  const btnA = document.getElementById('viewer-btn-ana');
+  if (!btnR || !btnA) return;
+  btnR.classList.toggle('active', who === 'rafael');
+  btnA.classList.toggle('active', who === 'ana');
+  updateAllReactionUIs();
+}
+
+// ── REACTIONS ─────────────────────────────────────────────────────────────────
+function loadReactions() {
+  return {
+    rafael: JSON.parse(localStorage.getItem('reactions_rafael') || '{}'),
+    ana: JSON.parse(localStorage.getItem('reactions_ana') || '{}'),
+  };
+}
+
+function react(cardIdx, reaction) {
+  const reactions = loadReactions();
+  const current = reactions[currentViewer][cardIdx];
+  if (current === reaction) {
+    delete reactions[currentViewer][cardIdx]; // toggle off
+  } else {
+    reactions[currentViewer][cardIdx] = reaction;
+  }
+  localStorage.setItem('reactions_' + currentViewer, JSON.stringify(reactions[currentViewer]));
+  updateReactionUI(cardIdx);
+}
+
+function updateReactionUI(cardIdx) {
+  const reactions = loadReactions();
+  const myR = reactions[currentViewer][cardIdx];
+  const types = ['heart','meh','no'];
+  const activeCls = { heart:'active-heart', meh:'active-meh', no:'active-no' };
+  types.forEach(r => {
+    const btn = document.getElementById(`react-${cardIdx}-${r}`);
+    if (!btn) return;
+    types.forEach(t => btn.classList.remove(activeCls[t]));
+    if (myR === r) btn.classList.add(activeCls[r]);
+  });
+  // Match banner
+  const rR = reactions.rafael[cardIdx];
+  const rA = reactions.ana[cardIdx];
+  const banner = document.getElementById(`match-banner-${cardIdx}`);
+  if (!banner) return;
+  let matchText = '';
+  let doubleHeart = false;
+  if (rR === 'heart' && rA === 'heart') { matchText = '❤️ Os dois curtiram esse destino!'; doubleHeart = true; }
+  else if (rR === 'no' && rA === 'no') matchText = '🤝 Combinado — os dois passaram nesse.';
+  else if (rR === 'meh' && rA === 'meh') matchText = '🤔 Os dois estão na dúvida aqui.';
+  else if (rR === 'heart' && rA === 'meh') matchText = '💙 Rafael curtiu · Ana ainda está na dúvida';
+  else if (rA === 'heart' && rR === 'meh') matchText = '💜 Ana curtiu · Rafael ainda está na dúvida';
+  else if (rR === 'heart' && rA === 'no') matchText = '💙 Rafael curtiu · Ana passou';
+  else if (rA === 'heart' && rR === 'no') matchText = '💜 Ana curtiu · Rafael passou';
+  banner.textContent = matchText;
+  banner.classList.toggle('visible', !!matchText);
+  banner.classList.toggle('double-heart', doubleHeart);
+}
+
+function updateAllReactionUIs() {
+  const grid = document.getElementById('destinations-grid');
+  if (!grid) return;
+  const count = grid.querySelectorAll('.dest-card').length;
+  for (let i = 0; i < count; i++) updateReactionUI(i);
+}
+
+// ── EXPLORAR COM IA ───────────────────────────────────────────────────────────
+function exploreWithAI(cardIdx) {
+  const d = (window._destsCache || [])[cardIdx];
+  if (!d) return;
+  localStorage.setItem('explore_dest', JSON.stringify(d));
+  window.location.href = '/explorar';
+}
+
+// ── DESTINATION POOL ──────────────────────────────────────────────────────────
+// Each destination has scoring attributes: nature(0-100), culture(0-100),
+// food(0-100), adventure(0-100), calm(0-100), budgetMin(0-3), bubbleTags[]
+
+const DEST_POOL = [
+  // ── BRASIL ─────────────────────────────────────────────────────────────────
+  { flag:'🇧🇷', name:'Jalapão, Tocantins', country:'Brasil', tagline:'O deserto laranja que o Brasil esqueceu.', type:'br',
+    s: { nature:95, culture:20, food:30, adventure:90, calm:60, budgetMin:1,
+         bubbleTags:['deserto','natureza','isolamento','ruptura','silêncio'] },
+    why:'Para quem quer se sentir pequeno diante de algo imenso e sair completamente da bolha — paisagens de outro planeta, silêncio absoluto e um Brasil que não existe em guia de turismo.',
+    experiences:['Nadar nos fervedouros — piscinas de areia que borbulham água cristalina','Dunas de areia vermelha ao pôr do sol sem ninguém por quilômetros','Cachoeira da Velha — uma das mais impressionantes do Brasil central'],
+    stay:'Pousadas de aventura em São Félix do Tocantins ou acampamentos de imersão no cerrado',
+    food:['Peixe do rio fresco grelhado nas pousadas locais','Pequi com arroz — o sabor símbolo do cerrado'],
+    tip:'Vá de maio a setembro. Na chuva, as estradas ficam intransitáveis. Reserve guia local com antecedência — é indispensável.',
+    budget:'R$ 5.000–9.000', bestTime:'Maio a setembro' },
+
+  { flag:'🇧🇷', name:'Lençóis Maranhenses', country:'Brasil', tagline:'Dunas brancas, lagoas azuis, silêncio perfeito.', type:'br',
+    s: { nature:95, culture:20, food:55, adventure:60, calm:80, budgetMin:1,
+         bubbleTags:['natureza','paisagem','beleza','silêncio','deserto'] },
+    why:'Uma das paisagens mais únicas do planeta — e está no Brasil. Para quem quer beleza absurda com ritmo lento e mínima infraestrutura turística.',
+    experiences:['Caminhar entre as dunas ao amanhecer quando não há ninguém','Nadar nas lagoas interdunas de água azul-turquesa','Sobrevoo de avião leve — a vista de cima muda a perspectiva'],
+    stay:'Pousadas em Barreirinhas (mais estruturado) ou Atins (vilarejo pequeno, mais atmosfera)',
+    food:['Filhote grelhado — peixe de rio local, textura marcante','Torta de camarão e tacacá — gastronomia maranhense autêntica'],
+    tip:'As lagoas enchem entre julho e setembro. Em outros meses as dunas existem, mas as lagoas podem estar secas — atenção à época.',
+    budget:'R$ 4.500–8.000', bestTime:'Julho a setembro' },
+
+  { flag:'🇧🇷', name:'Chapada Diamantina', country:'Brasil', tagline:'O interior que a Bahia guarda com ciúme.', type:'br',
+    s: { nature:88, culture:45, food:45, adventure:82, calm:65, budgetMin:1,
+         bubbleTags:['natureza','aventura','trilha','brasil','cachoeira'] },
+    why:'Cachoeiras, cavernas e trilhas num dos cenários naturais mais diversos do país — com um circuito cultural vivo na vila de Lençóis para equilibrar.',
+    experiences:['Morro do Pai Inácio ao amanhecer com vista do Vale do Capão','Poço Azul e Poço Encantado — luzes azuis dentro de cavernas inundadas','Pernoite numa fazenda de café no alto da Chapada'],
+    stay:'Pousadas charmosas em Lençóis ou Vale do Capão — pequenas e com personalidade',
+    food:['Moqueca de peixe de rio com pirão — gastronomia baiana de interior','Cerveja artesanal nas biroscas de Lençóis à noite'],
+    tip:'Contrate guia local para as trilhas maiores — além da segurança, são eles que conhecem atalhos e histórias que não estão no mapa.',
+    budget:'R$ 3.500–7.000', bestTime:'Junho a setembro' },
+
+  { flag:'🇧🇷', name:'Pantanal Sul', country:'Brasil', tagline:'A maior savana alagada do planeta, quase sem turistas.', type:'br',
+    s: { nature:100, culture:15, food:40, adventure:78, calm:82, budgetMin:1,
+         bubbleTags:['natureza','fauna','isolamento','aventura','silêncio'] },
+    why:'Para quem quer a experiência de estar completamente dentro da natureza — onças, araras e capivaras a metros de distância, sem filtro, sem grade.',
+    experiences:['Safari fotográfico em busca de onças pintadas no rio Cuiabá','Pôr do sol de barco vendo jacarés e tuiuiús sem ninguém por perto','Pernoite numa fazenda tradicional do Pantanal com jantar ao relento'],
+    stay:'Fazendas-pousada dentro do Pantanal — como a Caiman (MS) ou Pousada do Rio Mutum',
+    food:['Pacu assado na brasa — o peixe-símbolo do Pantanal','Arroz com pequi e carne-seca defumada, pratos da cultura pantaneira'],
+    tip:'Estrada Transpantaneira (MT): 150km de terra com pontes de madeira — o acesso mais bonito. Vá de julho a outubro (seca).',
+    budget:'R$ 5.000–12.000', bestTime:'Julho a outubro' },
+
+  { flag:'🇧🇷', name:'São Luís + Alcântara', country:'Brasil', tagline:'Arquitetura colonial e ruínas no Maranhão profundo.', type:'br',
+    s: { nature:55, culture:90, food:80, adventure:45, calm:65, budgetMin:1,
+         bubbleTags:['cultura','gastronomia','brasil','história','arquitetura'] },
+    why:'A única cidade tombada pela UNESCO no Brasil com azulejos portugueses intactos — e a 1h de barco, Alcântara: ruínas coloniais numa baía quase deserta.',
+    experiences:['São Luís ao entardecer: azulejos coloniais e tambores de Bumba Meu Boi','Alcântara de barco: ruínas do pelourinho e casarões abandonados na praia','Travessia de barco na baía de São Marcos ao amanhecer'],
+    stay:'Casarões históricos convertidos em pousada no centro de São Luís',
+    food:['Arroz de cuxá — prato símbolo maranhense com vinagreira e camarão','Torta de camarão fresco e casquinha de caranguejo no Mercado Central'],
+    tip:'São Luís é a porta de entrada para os Lençóis Maranhenses — vale combinar os dois numa mesma viagem de 8–10 dias.',
+    budget:'R$ 4.000–8.000', bestTime:'Julho a setembro' },
+
+  // ── INTERNACIONAL NÃO-EUROPEU ───────────────────────────────────────────────
+  { flag:'🇬🇪', name:'Geórgia — Tbilisi & Kazbegi', country:'Geórgia', tagline:'O lugar que nenhum amigo seu visitou ainda.', type:'surprise',
+    s: { nature:65, culture:90, food:90, adventure:65, calm:58, budgetMin:2,
+         bubbleTags:['ruptura','cultura','gastronomia','vinho','diferente','história'] },
+    why:'Gastronomia que surpreende, vinhos naturais patrimônio da humanidade, montanhas do Cáucaso e um povo caloroso — com custo 3x menor que Europa Ocidental.',
+    experiences:['Kazbegi — monastério Gergeti a 2.200m com vista para o Monte Kazbek nevado','Jantar num marani (adega tradicional) com vinho qvevri fermentado em ânforas de barro','Tbilisi antiga: ruas entalhadas em madeira, banhos de enxofre sulfurosos, bares escondidos'],
+    stay:'Pousadas de design em Tbilisi antiga (Fabrika ou Rooms Hotel) ou casas rurais em Kazbegi',
+    food:['Khinkali — pasta recheada de carne que se come com as mãos, nunca com garfo','Churchkhela — nozes embrulhadas em pasta de uva, o doce das ruas georgianas'],
+    tip:'O vinho é servido em quantidades generosas em qualquer refeição — é parte da hospitalidade. Aceite sempre. A Geórgia é um dos países mais seguros da região.',
+    budget:'R$ 9.000–18.000', bestTime:'Maio–junho e Setembro–outubro' },
+
+  { flag:'🇲🇦', name:'Marrocos — Fes e Atlas', country:'Marrocos', tagline:'Uma viagem ao século XIII com culinária de outro nível.', type:'surprise',
+    s: { nature:55, culture:95, food:85, adventure:65, calm:45, budgetMin:2,
+         bubbleTags:['ruptura','cultura','história','gastronomia','diferente','labirinto'] },
+    why:'Medina de Fes — labirinto vivo sem carros desde o século IX — e o Atlas com paisagens de tirar o fôlego. Para quem quer sair completamente do seu mundo sem voar 20 horas.',
+    experiences:['Acordar na medina de Fes antes do azan e caminhar sem mapa nem telefone','Jantar num riad com vista para os telhados da cidade antiga','Aït Benhaddou e vales berberes do Atlas: paisagem de Lawrence da Arábia'],
+    stay:'Riad na medina de Fes — Riad Fes ou Dar Roumana — casas com pátio interno, silêncio absoluto',
+    food:['Pastilla de pombo ou frango — folhado doce-salgado único no mundo','Tagine de cordeiro com ameixas num restaurante fora do circuito turístico'],
+    tip:'Contrate guia local para a medina de Fes no primeiro dia — sem guia, a experiência é frustrante. Com guia, é mágica.',
+    budget:'R$ 10.000–18.000', bestTime:'Março–maio e Outubro–novembro' },
+
+  { flag:'🇨🇴', name:'Colômbia — Cartagena & Cafeteira', country:'Colômbia', tagline:'Cor, calor e café num país que virou outra coisa.', type:'intl',
+    s: { nature:65, culture:85, food:82, adventure:62, calm:52, budgetMin:1,
+         bubbleTags:['cultura','gastronomia','latinoamerica','história','mar'] },
+    why:'Cartagena colonial com o Caribe ao fundo e a zona cafeeira como um dos cenários mais bonitos da América Latina — tudo num raio de 2h de voo.',
+    experiences:['Caminhar pelas muralhas de Cartagena ao entardecer com drinque na mão','Fazenda de café na zona cafeeira: colheita, torra e degustação na fonte','Parque Nacional Tayrona: selva encontrando o Caribe, trilha de 3h até praias sem estrada'],
+    stay:'Boutique hotel no centro histórico de Cartagena ou finca boutique na zona cafeeira',
+    food:['Arepas de choclo com queso costeño — café da manhã que define o país','Bandeja paisa — o prato mais honesto da culinária colombiana'],
+    tip:'A zona cafeeira fica via Medellín ou Pereira. Vale combinar Cartagena (3n) + Cafeteira (4n) numa viagem de 10 dias.',
+    budget:'R$ 7.000–15.000', bestTime:'Dezembro–março e Julho–agosto' },
+
+  { flag:'🇵🇪', name:'Peru — além de Machu Picchu', country:'Peru', tagline:'Uma das civilizações mais complexas já existiu aqui.', type:'surprise',
+    s: { nature:72, culture:92, food:90, adventure:72, calm:50, budgetMin:2,
+         bubbleTags:['ruptura','cultura','história','gastronomia','diferente','arqueologia'] },
+    why:'Lima tem a melhor gastronomia da América Latina; Cusco é uma das cidades mais impressionantes do mundo; e Machu Picchu ainda é Machu Picchu.',
+    experiences:['Lima: jantar no Central ou num cevicheria local no Mercado Surquillo','Cusco e o Vale Sagrado dos Incas — as ruínas que ninguém fotografa','Machu Picchu no Caminho Inca — 4 dias de trilha para a chegada mais épica possível'],
+    stay:'Pousadas boutique em Miraflores (Lima) e em hotel de design no centro histórico de Cusco',
+    food:['Ceviche clássico de linguado no Mercado Surquillo de Lima','Chupe de camarones — sopa cremosa de camarões do Pacífico'],
+    tip:'Machu Picchu tem limite de visitantes e ingressos esgotam meses antes. Reserve antes de comprar a passagem.',
+    budget:'R$ 10.000–22.000', bestTime:'Maio a outubro (seca)' },
+
+  // ── EUROPA ─────────────────────────────────────────────────────────────────
+  { flag:'🇵🇹', name:'Alentejo, Portugal', country:'Portugal', tagline:'O interior que Lisboa esqueceu de contar.', type:'intl',
+    s: { nature:72, culture:70, food:92, adventure:38, calm:92, budgetMin:2,
+         bubbleTags:['vinho','gastronomia','tranquilidade','história','campo'] },
+    why:'Herdades de vinho, planícies douradas e gastronomia honesta. A Europa sem turismo de massa, num ritmo que permite sentir-se em casa num lugar desconhecido.',
+    experiences:['Visitar uma herdade de vinho e almoçar com o produtor','Évora ao entardecer — cidade medieval sem multidão','Estrada entre vinhedos e olivais ao pôr do sol, sem destino certo'],
+    stay:'Herdades boutique com vinha própria — Monte da Ravasqueira ou Convento do Espinheiro',
+    food:['Migas alentejanas com carne de porco à alentejana','Vinhos do Alentejo — Esporão, Herdade do Esporão, Monte da Ravasqueira'],
+    tip:'Alugue carro — é indispensável. As herdades ficam fora das cidades e a liberdade de parar onde quiser é metade da experiência.',
+    budget:'R$ 12.000–22.000', bestTime:'Abril–junho e Setembro–outubro' },
+
+  { flag:'🇵🇹', name:'Açores — São Miguel & Flores', country:'Portugal', tagline:'Vulcões, baleia e silêncio no meio do Atlântico.', type:'surprise',
+    s: { nature:92, culture:45, food:70, adventure:80, calm:88, budgetMin:2,
+         bubbleTags:['natureza','ruptura','isolamento','aventura','oceano','vulcão'] },
+    why:'Um arquipélago vulcânico no Atlântico com lagos de cratera, golfinhos e o melhor mergulho da Europa — praticamente desconhecido pelos brasileiros.',
+    experiences:['Lagoa das Sete Cidades: lago bicolor dentro de uma cratera vulcânica','Observação de baleias e golfinhos (avistamento quase garantido)','Caldeiras da Furnas: geysers e cozido preparado pelo calor da terra'],
+    stay:'Casas rurais com vista para o mar ou hotéis boutique na Lagoa, São Miguel',
+    food:['Cozido das Furnas — ensopado cozido por energia geotérmica dentro da terra','Chicharro grelhado e queijo de São Jorge — sabores únicos do Atlântico'],
+    tip:'Flores é a ilha mais remota e mais impressionante — vale o voo interno de 40min. São Miguel é a base com mais estrutura.',
+    budget:'R$ 12.000–20.000', bestTime:'Junho a outubro' },
+
+  { flag:'🇮🇹', name:'Puglia — Salento & Valle d\'Itria', country:'Itália', tagline:'O calcanhar da Itália que os italianos guardam pra si.', type:'intl',
+    s: { nature:65, culture:80, food:95, adventure:35, calm:82, budgetMin:3,
+         bubbleTags:['gastronomia','vinho','cultura','mar','tranquilidade','história'] },
+    why:'Ostuni, Alberobello e o Salento — a Itália autêntica sem filas. Gastronomia honesta, masserias, mar cristalino e poucas pessoas.',
+    experiences:['Almoço numa masseria do séc. XVIII com azeite e burrata da própria fazenda','Alberobello: os trulli (casas cônicas únicas no mundo) às 7h sem turistas','Praia de Porto Selvaggio — penhasco, pinheiros e água que parece Caribe'],
+    stay:'Masseria boutique entre Ostuni e Fasano — experiência de fazenda italiana de charme',
+    food:['Orecchiette al ragù di braciole — a pasta que define a Puglia','Bombette — rolinhos de carne de porco recheados, especialidade de Alberobello'],
+    tip:'Alugue carro. As melhores praias e masserias ficam fora dos centros — sem carro, você perde 70% do que a região tem.',
+    budget:'R$ 18.000–35.000', bestTime:'Junho e Setembro–outubro' },
+
+  { flag:'🇪🇸', name:'Astúrias & Galícia', country:'Espanha', tagline:'A Espanha que nunca aparece no Instagram.', type:'surprise',
+    s: { nature:82, culture:72, food:88, adventure:62, calm:75, budgetMin:2,
+         bubbleTags:['natureza','gastronomia','ruptura','verde','cultura','costa'] },
+    why:'Picos de Europa, costas selvagens do Cantábrico, sidra e mariscos — a Espanha que não existe no imaginário do Brasil.',
+    experiences:['Picos de Europa: paisagem alpina com vacas e vilarejos de pedra em altitude','Comer percebes (crustáceo rarísimo) num bar de beira-mar na Galícia','Santiago de Compostela ao entardecer — catedral e peregrinos chegando'],
+    stay:'Parador histórico (hotéis em castelos/conventos do governo) ou casas rurais nos Picos',
+    food:['Percebe, navalheira e mexilhão no mercado de Orense — mariscos do Atlântico','Lacón con grelos — carne defumada com legumes, o prato de inverno galego'],
+    tip:'Astúrias e Galícia são verdes o ano todo — julho e agosto têm menos chuva. Alugue carro para conectar as duas regiões em 10 dias.',
+    budget:'R$ 12.000–22.000', bestTime:'Junho a setembro' },
+
+  { flag:'🇯🇵', name:'Kyoto fora de temporada', country:'Japão', tagline:'A beleza que transforma quem vê.', type:'intl',
+    s: { nature:55, culture:97, food:97, adventure:38, calm:88, budgetMin:3,
+         bubbleTags:['cultura','gastronomia','beleza','silêncio','arte','história'] },
+    why:'Templos vazios ao amanhecer, gastronomia que redefine o que é comer bem, e uma cultura que ensina a ficar quieto e prestar atenção.',
+    experiences:['Fushimi Inari às 5h — os mil torii sem nenhum turista','Kaiseki em Gion — refeição de 12 pratos que é arte comestível','Arashiyama: bambus, templos e rio Oi em silêncio absoluto'],
+    stay:'Ryokan tradicional em Kyoto — Hiiragiya ou Tawaraya — com tatami, yukata e café da manhã japonês',
+    food:['Kaiseki — haute cuisine japonesa, sequência de pequenos pratos','Tofu de Kyoto — yudofu no Nanzenji, simples e inesquecível'],
+    tip:'Evite março-abril (cerejeiras) e novembro (folhagem) — lotação máxima. Dezembro/janeiro tem frio, silêncio e preço bem menor.',
+    budget:'R$ 25.000–42.000', bestTime:'Dezembro–fevereiro ou junho–agosto' },
+
+  // ── BRASIL (continuação) ────────────────────────────────────────────────────
+  { flag:'🇧🇷', name:'Fernando de Noronha', country:'Brasil', tagline:'O mar mais bonito do Brasil — com limite de visitas.', type:'br',
+    s: { nature:97, culture:20, food:55, adventure:75, calm:80, budgetMin:2,
+         bubbleTags:['natureza','mar','snorkel','isolamento','beleza','brasil'] },
+    why:'Água azul-transparente, golfinhos que aparecem toda manhã na Baía do Sancho, e uma paisagem vulcânica que justifica cada centavo gasto para chegar.',
+    experiences:['Baía do Sancho ao amanhecer: a praia mais bonita do Brasil, vazia às 7h','Snorkel na Baía dos Porcos com tartarugas e barracudas a 1m de distância','Mergulho na Laje Dois Irmãos com cardumes que escurecem a visão'],
+    stay:'Pousadas boutique em Vila dos Remédios — Maravilha ou Teju-Açu',
+    food:['Lagosta fresca grelhada nos restaurantes da vila','Peixe do dia com pirão de inhame — culinária simples e perfeita'],
+    tip:'A Taxa de Preservação Ambiental (TPA) é cara e tem limite diário de visitantes — reserve com meses de antecedência. Merece o esforço.',
+    budget:'R$ 8.000–20.000', bestTime:'Agosto a dezembro' },
+
+  { flag:'🇧🇷', name:'Bonito, Mato Grosso do Sul', country:'Brasil', tagline:'Snorkel em rios com água de cristal dentro da floresta.', type:'br',
+    s: { nature:92, culture:15, food:42, adventure:80, calm:70, budgetMin:1,
+         bubbleTags:['natureza','água','snorkel','aventura','brasil','fauna'] },
+    why:'Rios com visibilidade de 50m, flutuação com peixes coloridos, grutas com lagos de esmeralda — tudo regulado para preservar um ecossistema único no mundo.',
+    experiences:['Flutuação no Rio da Prata com arraias, dourados e pintados à vista','Gruta do Lago Azul: formações de cristal sobre um lago de azul impossível','Abismo Anhumas: rapel de 72m até uma gruta inundada com estalactites'],
+    stay:'Pousadas de charme nos arredores de Bonito — Zagaia Eco-Resort ou Pousada Olho d\'Água',
+    food:['Pintado na telha — peixe pantaneiro assado no molho de tomates e alcaparras','Pacu assado na brasa servido com farofa de banana'],
+    tip:'Cada atração tem limite diário de visitantes. Reserve online com semanas de antecedência — chegando sem reserva, você fica sem fazer nada.',
+    budget:'R$ 4.000–9.000', bestTime:'Outubro a março' },
+
+  { flag:'🇧🇷', name:'Paraty & Costa Verde', country:'Brasil', tagline:'Cachaça artesanal, mar e história no mesmo quintal.', type:'br',
+    s: { nature:78, culture:80, food:75, adventure:50, calm:72, budgetMin:1,
+         bubbleTags:['história','mar','cachaça','cultura','arquitetura','brasil'] },
+    why:'Centro histórico colonial intacto, mais de 300 cachoeiras na mata atlântica e uma baía com ilhas paradisíacas — tudo a 4h de São Paulo.',
+    experiences:['Passeio de escuna pelas ilhas da baía com parada em praias de acesso só por mar','Trilha até a cachoeira do Tobogã com banho nas pedras lisas','Paraty ao entardecer: paralelepípedos, igrejas e a maré que invade o centro'],
+    stay:'Pousadas históricas no centro tombado — Casa Turquesa ou Pousada do Sandi',
+    food:['Pinga artesanal da Cachaçaria Paratiana — degustação com 40 rótulos diferentes','Camarão ao alho com pirão de banana — restaurantes no centro histórico'],
+    tip:'O Festival da Cachaça em julho e a FLIP (literatura) em julho-agosto lotam a cidade. Evite nessas datas ou reserve com muito antecedência.',
+    budget:'R$ 3.000–7.000', bestTime:'Abril–julho e setembro–novembro' },
+
+  { flag:'🇧🇷', name:'Ouro Preto & Tiradentes', country:'Brasil', tagline:'O barroco brasileiro no seu esplendor original.', type:'br',
+    s: { nature:45, culture:95, food:72, adventure:30, calm:70, budgetMin:1,
+         bubbleTags:['história','cultura','arquitetura','gastronomia','brasil','arte'] },
+    why:'Ouro Preto é um museu a céu aberto onde cada dobra do terreno esconde uma igreja de ouro. Tiradentes, a 70km, é menor, mais calma e gastronômica.',
+    experiences:['Visita guiada às igrejas barrocas ao amanhecer, antes dos grupos','Teatro Municipal de Ouro Preto — um dos mais bonitos do Brasil colonial','Tiradentes: Museu de Arte Sacra e jantar num solar setecentista'],
+    stay:'Pousadas históricas em Tiradentes — Solar da Ponte ou Pousada Três Portas',
+    food:['Frango ao molho pardo com angu — prato mineiro clássico num rancho colonial','Doce de leite artesanal e queijo canastra direto do produtor'],
+    tip:'Ouro Preto é cidade universitária — nos fins de semana festivos fica barulhenta. Prefira Tiradentes para dormir: mais calma, igual em beleza.',
+    budget:'R$ 3.000–6.500', bestTime:'Abril–julho e setembro–outubro' },
+
+  { flag:'🇧🇷', name:'Amazônia — Rio Negro', country:'Brasil', tagline:'A floresta que respira e você sente dentro do peito.', type:'br',
+    s: { nature:100, culture:60, food:55, adventure:72, calm:80, budgetMin:1,
+         bubbleTags:['natureza','fauna','cultura','silêncio','brasil','isolamento'] },
+    why:'Manaus é o portal para um dos biomas mais impressionantes do planeta. O Rio Negro — de água preta e quente — é mais gentil para nadar que o Solimões.',
+    experiences:['Encontro das Águas: a fronteira visual entre rio Negro e Solimões por 6km','Passeio noturno de canoa para ver jacarés, sapos e piranhas no igarapé','Comunidade ribeirinha: almoço e cultura dos povos do rio'],
+    stay:'Lodges flutuantes no Rio Negro — Anavilhanas Jungle Lodge ou Amazon Tupana Lodge',
+    food:['Tacacá com jambu — o prato que anestesia a boca e você quer mais','Caldeirada de tucunaré com farinha d\'água e banana-da-terra'],
+    tip:'Período das cheias (janeiro-junho): a floresta fica inundada e se navega entre as copas das árvores. Período de seca (julho-dezembro): praias e rios acessíveis.',
+    budget:'R$ 5.000–14.000', bestTime:'Junho a novembro (melhor visibilidade)' },
+
+  { flag:'🇧🇷', name:'Trancoso & Arraial d\'Ajuda', country:'Brasil', tagline:'O Nordeste que manteve a alma enquanto crescia.', type:'br',
+    s: { nature:75, culture:60, food:80, adventure:42, calm:78, budgetMin:2,
+         bubbleTags:['praia','gastronomia','beleza','tranquilidade','brasil','cultura'] },
+    why:'Trancoso tem o Quadrado mais bonito do Brasil, praias sem badalação e restaurantes que ficariam bem em qualquer capital europeia — num vilarejo na Bahia.',
+    experiences:['Praia dos Nativos ao amanhecer: 6km de areia, sem construção, sem barulho','O Quadrado de Trancoso ao entardecer com as casas coloridas e igrejas dos séculos XVII','Passeio de quadriciclo pelas praias desertas entre Caraíva e Corumbau'],
+    stay:'Pousadas boutique no Quadrado — Etnia ou Uxua Casa Hotel & Spa',
+    food:['Moqueca baiana de siri mole com dendê e leite de coco no barro','Acarajé com vatapá e caruru na feira de Arraial d\'Ajuda'],
+    tip:'Trancoso fica lotada no verão e festas de fim de ano. Abril-junho é a lua de mel perfeita: vazio, verde, preço razoável.',
+    budget:'R$ 6.000–18.000', bestTime:'Abril a julho' },
+
+  { flag:'🇧🇷', name:'Serra Gaúcha — Vale dos Vinhedos', country:'Brasil', tagline:'O vinho brasileiro que já vence premiações internacionais.', type:'br',
+    s: { nature:65, culture:75, food:92, adventure:38, calm:80, budgetMin:1,
+         bubbleTags:['vinho','gastronomia','tranquilidade','cultura','brasil','campo'] },
+    why:'Cantinas familiares com 4 gerações, uvas sendo pisadas à mão e um espumante de Garibaldi que envergonha muito Prosecco. Com a paisagem européia e o calor gaúcho.',
+    experiences:['Roteiro de vinícolas no Vale dos Vinhedos com degustação em cantinas familiares','Café colonial em Nova Petrópolis — mesa de 40 pratos tradicionais teutos','Bento Gonçalves: vindima manual em março com pés na cuba'],
+    stay:'Pousadas boutique nas vinícolas — Casa Valduga Wine Hotel ou Pousada Vivalti',
+    food:['Risoto de funghi com espumante brut colhido no Vale','Churrasco gaúcho ao estilo colonial com linguiça artesanal defumada'],
+    tip:'Março é época da vindima — colheita manual e a uva mais fresca. Julho tem frio de verdade, vinhedos dourados e festas de inverno.',
+    budget:'R$ 3.000–7.000', bestTime:'Março–maio e julho' },
+
+  { flag:'🇧🇷', name:'Ilha Grande, Rio de Janeiro', country:'Brasil', tagline:'Sem carro, sem banco, sem estresse. Só mata e mar.', type:'br',
+    s: { nature:88, culture:35, food:60, adventure:68, calm:82, budgetMin:1,
+         bubbleTags:['natureza','mar','isolamento','trilha','brasil','praia'] },
+    why:'Ilha Grande proibiu carros. O resultado é o mais incrível: silêncio, trilhas, praias acessíveis só a pé ou de barco, e uma biodiversidade absurda.',
+    experiences:['Trilha de 3h até Lopes Mendes — a praia mais bonita do Rio e talvez do Brasil','Snorkel nos recifes de Sítio Forte com polvos, agulhões e estrelas-do-mar','Passeio de caiaque pelas lagunas e ilhotas ao redor da Ilha Grande'],
+    stay:'Pousadas em Abraão (mais estrutura) ou em praias remotas com acesso só de barco',
+    food:['Peixe fresquíssimo grelhado com pirão de banana no restaurante da praia','Camarão à baiana em restaurante familiar com mesas na areia'],
+    tip:'Vá de semana: nos fins de semana de verão o barco de Angra despeja 3.000 pessoas. Na semana, a ilha volta a ser deserta.',
+    budget:'R$ 3.500–8.000', bestTime:'Abril a novembro' },
+
+  // ── AMÉRICA LATINA ──────────────────────────────────────────────────────────
+  { flag:'🇦🇷', name:'Mendoza & Andes Argentinos', country:'Argentina', tagline:'Malbec nas encostas dos Andes, a melhor combinação do mundo.', type:'intl',
+    s: { nature:78, culture:55, food:88, adventure:60, calm:72, budgetMin:1,
+         bubbleTags:['vinho','gastronomia','natureza','aventura','latinoamerica','andes'] },
+    why:'A capital mundial do Malbec com o Aconcágua de fundo. Vinícolas com arquitetura premiada, almoços de 4h à sombra de parreiras e neve nos picos.',
+    experiences:['Degustação nas bodegas do Valle de Uco com vista para os Andes nevados','Rafting no Rio Mendoza com classe III-IV em mar de neve derretida','Acampamento base do Aconcágua (opcional) ou trekking no Parque Provincial'],
+    stay:'Bodegas boutique com hospedagem — Casa de Uco ou Cavas Wine Lodge',
+    food:['Asado a la parrilla de cordeiro com chimichurri caseiro','Empanadas mendocinas de carne cortada a cuchillo — recheio de verdade'],
+    tip:'Câmbio paralelo (blue) torna a Argentina acessível para brasileiros. Pergunte na chegada — faz diferença enorme no custo total.',
+    budget:'R$ 4.000–11.000', bestTime:'Outubro a abril' },
+
+  { flag:'🇦🇷', name:'Patagônia — El Calafate & Chaltén', country:'Argentina', tagline:'O fim do mundo que faz o coração apertar de beleza.', type:'surprise',
+    s: { nature:100, culture:15, food:55, adventure:88, calm:78, budgetMin:2,
+         bubbleTags:['natureza','ruptura','silêncio','aventura','isolamento','paisagem'] },
+    why:'Perito Moreno avançando sobre o Lago Argentino com estrondos de gelo. Monte Fitz Roy ao amanhecer. Uma das últimas fronteiras genuínas do planeta.',
+    experiences:['Perito Moreno: caminhar sobre a geleira com crampons no gelo azul','Trekking até Laguna de los Tres com o Fitz Roy a 100m de distância','Acampamento em El Chaltén com aurora austral em noites limpas de março'],
+    stay:'Hostels boutique em El Chaltén para base de trekking ou hotel em El Calafate',
+    food:['Cordeiro patagônico assado a la cruz — 8h de cozimento lento ao ar livre','Centolla (caranguejo-rei) fresca em Puerto Madryn — quando na temporada'],
+    tip:'El Chaltén tem trekking gratuito com trilhas sinalizadas — não precisa de guia. Vá em fevereiro-março: dias longos, menos vento.',
+    budget:'R$ 9.000–20.000', bestTime:'Novembro a março' },
+
+  { flag:'🇧🇴', name:'Salar de Uyuni, Bolívia', country:'Bolívia', tagline:'O maior espelho do mundo, a 3.600m de altitude.', type:'surprise',
+    s: { nature:95, culture:45, food:40, adventure:72, calm:70, budgetMin:1,
+         bubbleTags:['ruptura','natureza','paisagem','diferente','isolamento','altitude'] },
+    why:'Uma extensão plana de sal de 10.000 km² onde céu e terra se fundem. A estação das chuvas transforma o salar num espelho perfeito — foto impossível sem edição.',
+    experiences:['Nascer do sol no salar no espelho d\'água da estação das chuvas (novembro–março)','Cemitério de trens abandonados enferrujando no sal desde 1900','Laguna Colorada: lago vermelho com flamingos no altiplano boliviano'],
+    stay:'Hotel de sal dentro do salar — Luna Salada ou Palacio de Sal',
+    food:['Sopa de quinoa com llama desfiada — culinária andina honesta','Api com pastel de quinua — café da manhã boliviano com bebida de milho quente'],
+    tip:'A altitude de 3.600m cansa de verdade. Passe 1–2 dias em La Paz antes para aclimatar. Coca em chá ajuda muito.',
+    budget:'R$ 5.000–12.000', bestTime:'Novembro a março (espelho) ou junho a outubro (seco)' },
+
+  { flag:'🇨🇱', name:'Atacama, Chile', country:'Chile', tagline:'O deserto mais árido do planeta, estranho e belo.', type:'surprise',
+    s: { nature:92, culture:30, food:55, adventure:80, calm:75, budgetMin:2,
+         bubbleTags:['deserto','natureza','ruptura','astronômia','paisagem','aventura'] },
+    why:'Geysers ao amanhecer a -10°C, Valle da Luna ao pôr do sol e o céu mais estrelado do mundo — o Atacama é o lugar que parece outro planeta sem sair da Terra.',
+    experiences:['Geysers del Tatio às 6h da manhã com vapor no frio andino','Stargazing no Observatório ALMA: o maior radiotelescópio do mundo','Valle de la Luna ao pôr do sol: dunas e formações de sal cor de laranja'],
+    stay:'Hotéis de design em San Pedro de Atacama — Awasi ou Alto Atacama Desert Lodge',
+    food:['Ceviche atacameño com ingredientes do altiplano andino','Pisco sour na sacada ao pôr do sol — ritual obrigatório em San Pedro'],
+    tip:'San Pedro fica em 2.400m — bem mais manejável que Uyuni. O calor durante o dia e o frio da noite são extremos: leve roupa de inverno mesmo.',
+    budget:'R$ 11.000–25.000', bestTime:'Abril a outubro' },
+
+  { flag:'🇺🇾', name:'Uruguai — Colônia & Montevidéu', country:'Uruguai', tagline:'A Europa que ficou no Rio da Prata.', type:'intl',
+    s: { nature:45, culture:85, food:82, adventure:25, calm:88, budgetMin:1,
+         bubbleTags:['gastronomia','cultura','tranquilidade','história','arquitetura','vinho'] },
+    why:'Colônia del Sacramento com pedras coloniais intactas, Montevidéu com a melhor cena gastronômica do Rio da Prata e vinhos Tannat que disputam com o Malbec.',
+    experiences:['Colônia de barco desde Buenos Aires: 1h no Río de la Plata','Mercado del Puerto em Montevidéu: parrillas abertas desde os anos 1860','Bodega Garzon no interior: vinicultura premiada na pampa uruguaia'],
+    stay:'Hotel boutique no bairro Ciudad Vieja em Montevidéu ou casa colonial em Colônia',
+    food:['Chivito — sanduíche de carne, ovos, queijo e presunto: o maior do mundo','Tannat do Pisano ou Garzon — o vinho que define o Uruguai'],
+    tip:'Fácil de combinar com Buenos Aires (1h de barco). Uruguai é o país mais tranquilo e seguro da América do Sul — viagem de total relaxo.',
+    budget:'R$ 5.500–13.000', bestTime:'Outubro a abril' },
+
+  { flag:'🇲🇽', name:'Oaxaca, México', country:'México', tagline:'A gastronomia que a UNESCO reconheceu como patrimônio.', type:'surprise',
+    s: { nature:40, culture:95, food:98, adventure:35, calm:70, budgetMin:1,
+         bubbleTags:['gastronomia','cultura','história','ruptura','diferente','arte'] },
+    why:'A única culinária fora da França e Japão reconhecida pela UNESCO. Mole negro com 30 ingredientes, mezcal artesanal e mercados que são patrimônio vivo.',
+    experiences:['Visita ao mercado de Benito Juárez às 7h e café da manhã com tlayudas','Destilaria de mezcal artesanal num vilarejo zapoteca do vale central','Monte Albán ao entardecer: pirâmides zapotecas de 500 a.C. quase sem turistas'],
+    stay:'Casa boutique no centro histórico — La Casita de las Flores ou Casa Oaxaca',
+    food:['Mole negro sobre pecho de guajolote — o rei dos sete moles oaxaqueños','Tlayuda: tortilha gigante com frijoles, tasajo e quesillo — almoço de 2 reais'],
+    tip:'Outubro–novembro: Día de Muertos em Oaxaca é o mais autêntico do México. Flores, altares e procissões que não existem assim em lugar nenhum.',
+    budget:'R$ 6.000–14.000', bestTime:'Outubro a março' },
+
+  { flag:'🇨🇷', name:'Costa Rica — Selva & Vulcões', country:'Costa Rica', tagline:'Pura Vida: a natureza que o país escolheu preservar.', type:'intl',
+    s: { nature:95, culture:38, food:60, adventure:88, calm:65, budgetMin:2,
+         bubbleTags:['natureza','aventura','fauna','ecologia','verde','selva'] },
+    why:'Costa Rica protegeu 27% do território e o resultado é visível: quetzais, preguiças, jaguares e 900 espécies de pássaros num país do tamanho de SC.',
+    experiences:['Canopy e tirolesa no Arenal com vista para o vulcão','Punta Arenas: observação de tartarugas desovando à noite (temporada)','Corcovado: uma das reservas de selva mais densas do continente'],
+    stay:'Eco-lodges em La Fortuna (Arenal) — Tabacón Grand Spa ou Nayara Springs',
+    food:['Gallo pinto no café da manhã com natilla e fruta fresca do quintal','Casado de peixe no mercado central — arroz, feijão, salada e proteína local'],
+    tip:'Alugue carro. As estradas de terra chegam a lugares que nenhum ônibus vai. 4x4 é altamente recomendado.',
+    budget:'R$ 9.000–20.000', bestTime:'Dezembro a abril' },
+
+  { flag:'🇨🇺', name:'Cuba — Havana & Viñales', country:'Cuba', tagline:'O museu a céu aberto que não vai existir assim por muito tempo.', type:'surprise',
+    s: { nature:55, culture:92, food:45, adventure:42, calm:62, budgetMin:1,
+         bubbleTags:['ruptura','cultura','história','diferente','música','arte'] },
+    why:'Uma cidade congelada no tempo, com carros dos anos 50, salsa nas esquinas e uma energia humana impossível de reproduzir — e mudando rapidamente.',
+    experiences:['Havana Vieja ao cair da noite: son cubano saindo de cada porta aberta','Viñales: plantações de tabaco em mogotes (formações calcárias) e charutos à mão','Visita a uma fábrica de charutos e degustação com rum Havana Club 7 anos'],
+    stay:'Casas particulares em Havana — o equivalente cubano do Airbnb, mais autêntico que hotel',
+    food:['Ropa vieja — carne desfiada com molho de tomate e azeitonas, prato nacional','Ceviche de camarão numa paladar particular afastado do centro turístico'],
+    tip:'Leve dinheiro em espécie (CUC ou pesos cubanos) — cartões internacionais raramente funcionam. Internet é cara e lenta — desconecte e aproveite.',
+    budget:'R$ 5.000–11.000', bestTime:'Novembro a abril' },
+
+  // ── EUROPA (continuação) ────────────────────────────────────────────────────
+  { flag:'🇮🇹', name:'Sicília — Palermo & Valle dei Templi', country:'Itália', tagline:'Grécia, Roma, Árabe e Normando no mesmo prato.', type:'intl',
+    s: { nature:68, culture:92, food:96, adventure:38, calm:68, budgetMin:2,
+         bubbleTags:['gastronomia','história','cultura','mar','arte','arqueologia'] },
+    why:'A cozinha que sintetizou toda a história mediterrânea — com influência árabe, grega, normanda e espanhola num mercado que cheira a especiarias e mar.',
+    experiences:['Mercato di Ballarò em Palermo às 8h: frituras, peixes e arancini na rua','Valle dei Templi de Agrigento ao pôr do sol: 7 templos gregos intactos do séc. V a.C.','Cefalù: cidade medieval na rocha sobre o mar Tirreno, quase sem turistas estrangeiros'],
+    stay:'B&Bs em Palermo histórica ou palazzo convertido em hotel boutique em Taormina',
+    food:['Caponata siciliana com beringela, alcaparras e molho agridoce — receita árabe','Cannolo fresco recheado na hora com ricota de ovelha — proibido comer de embalagem'],
+    tip:'Sicília é grande e quente. Alugue carro e durma em ao menos 3 cidades: Palermo, Agrigento, Siracusa. Evite julho-agosto pela canícula.',
+    budget:'R$ 14.000–27.000', bestTime:'Abril–junho e setembro–outubro' },
+
+  { flag:'🇬🇷', name:'Grécia — Peloponeso & Creta interior', country:'Grécia', tagline:'A Grécia sem turistas de cruzeiro e sem Instagram.', type:'intl',
+    s: { nature:70, culture:88, food:85, adventure:52, calm:78, budgetMin:2,
+         bubbleTags:['história','gastronomia','mar','cultura','arqueologia','tranquilidade'] },
+    why:'Enquanto Santorini está com 4 cruzeiros ancorados, o Peloponeso tem Micenas, Nafplio e a Lagoa de Vouliagmeni — a Grécia que você imaginava antes de conhecer a turística.',
+    experiences:['Nafplio: a cidade mais bonita da Grécia, medieval e à beira do golfo','Epidauro: teatro greco do séc. IV a.C. com acústica perfeita — tente um sussurro do centro','Creta interior: Lasithi, Sfakia e gorge de Samaria — trilha de 16km até o mar'],
+    stay:'Casas de pedra em Nafplio ou agriturismos em Creta interior',
+    food:['Moussaka feita em casa com beringela do quintal e béchamel fresco','Loukoumades com mel de Creta e nozes — donuts gregos que não têm rival'],
+    tip:'Peloponeso é melhor de carro. A Grécia é barata fora de Santorini e Mykonos — coma sempre fora do centro turístico para dobrar o rendimento.',
+    budget:'R$ 10.000–22.000', bestTime:'Maio–junho e setembro–outubro' },
+
+  { flag:'🇮🇸', name:'Islândia — Aurora & Geleiras', country:'Islândia', tagline:'O planeta antes do ser humano, com aurora e gêiseres.', type:'surprise',
+    s: { nature:98, culture:42, food:58, adventure:85, calm:80, budgetMin:3,
+         bubbleTags:['natureza','ruptura','aurora','aventura','isolamento','paisagem'] },
+    why:'Baleia, glacial, gêiser, lava, cascata e aurora boreal num país do tamanho do estado do Rio — numa Ring Road que você faz em 7 dias.',
+    experiences:['Aurora boreal: perseguição numa van saindo de Reykjavik às 22h','Caverna de gelo no glacial Vatnajökull com paredes de azul impossível','Jökulsárlón: lagoa glacial com icebergs à deriva numa praia de areia preta'],
+    stay:'Hotéis boutique em Reykjavik ou guesthouses no anel viário',
+    food:['Skyr fresco com mirtilo e mel — o iogurte islandês que o mundo copiou mal','Borrego islandês assado — os animais pastam livres, a carne não tem comparação'],
+    tip:'Junho–agosto: sol da meia-noite, sem aurora. Setembro–março: aurora boreal mas dias curtos. Vá no meio-termo de setembro para ter os dois.',
+    budget:'R$ 20.000–40.000', bestTime:'Setembro a março (aurora) ou Junho–agosto (paisagem)' },
+
+  { flag:'🇳🇴', name:'Noruega — Fiordes & Lofoten', country:'Noruega', tagline:'As montanhas que caíram dentro do mar.', type:'surprise',
+    s: { nature:97, culture:45, food:60, adventure:80, calm:85, budgetMin:3,
+         bubbleTags:['natureza','ruptura','paisagem','isolamento','aventura','fiordes'] },
+    why:'Sognefjord, o maior fiordo do mundo. Lofoten, ilhas árticas com pescadores e auroras. Tudo acessível de trem e barco sem uma única hora maçante.',
+    experiences:['Nerøyfjord de ferry: paredes de rocha de 1.400m caindo na água verde-esmeralda','Trekking em Lofoten com vista das ilhas árticas do cume de Ryten ou Reinebringen','Kayak no Nærøyfjord ao amanhecer com névoa e silêncio absoluto'],
+    stay:'Rorbu — antigas cabanas de pescador convertidas em acomodação boutique nas Lofoten',
+    food:['Bacalhau seco das Lofoten: o mais valorizado do mundo, direto da fonte','Salmão defumado norueguês com cream cheese no café da manhã nas cabanas de pesca'],
+    tip:'Oslo é cara demais para mais de 2 dias. Vá direto para Bergen e os fiordes. Interrail ou pass de ferry cobre tudo.',
+    budget:'R$ 20.000–42.000', bestTime:'Junho–agosto (fiordes) ou setembro–fevereiro (aurora)' },
+
+  { flag:'🇲🇪', name:'Montenegro — Kotor & Durmitor', country:'Montenegro', tagline:'A joia que a Europa ainda não descobriu direito.', type:'surprise',
+    s: { nature:85, culture:70, food:72, adventure:72, calm:78, budgetMin:1,
+         bubbleTags:['ruptura','natureza','história','mar','diferente','barato'] },
+    why:'Cidade medieval murada com fiordes mediterrâneos de um lado e montanhas selvagens do outro — e preços de 10 anos atrás comparado com Croácia.',
+    experiences:['Kotor: muralhas medievais subindo a montanha com vista para a Boka','Durmitor: trekking no Parque Nacional com lagos glaciais e cânion do Tara','Perast e Nossa Senhora das Rochas: ilha artificial no meio da baía medieval'],
+    stay:'Casas históricas em Kotor antiga ou lodges de montanha em Žabljak (Durmitor)',
+    food:['Njeguški pršut — presunto defumado de montanha com queijo de cabra local','Kačamak: polenta com queijo e nata montanhesa — conforto total'],
+    tip:'Montenegro é pequeno: Kotor e Durmitor juntos em 7 dias de carro. Visa não necessária para brasileiro.',
+    budget:'R$ 8.000–16.000', bestTime:'Maio–setembro' },
+
+  { flag:'🇦🇱', name:'Albânia — Riviera & Berat', country:'Albânia', tagline:'O destino europeu mais subestimado desta década.', type:'surprise',
+    s: { nature:80, culture:75, food:70, adventure:68, calm:72, budgetMin:1,
+         bubbleTags:['ruptura','diferente','natureza','história','barato','europa'] },
+    why:'O Mediterrâneo mais transparente da Europa, preços de 2010 e uma cidade patrimônio da UNESCO que nenhum guia de viagem cobre direito.',
+    experiences:['Riviera albanesa: praia de Gjipe acessível só a pé pelo desfiladeiro','Berat, Cidade das Mil Janelas: casario otomano branco subindo a colina','Gjirokastër: cidadela medieval sobre vale nebuloso da Albânia profunda'],
+    stay:'Guesthouses em Berat histórica ou pousadas básicas na riviera',
+    food:['Tavë kosi — cordeiro assado no iogurte de ovelha, prato nacional albanês','Byrek: pastel folhado com espinafre e feta albanesa, café da manhã de 50 centavos'],
+    tip:'Euro não é a moeda oficial — o lek albanês tem câmbio ótimo para brasileiro. Quase nenhum turista brasileiro: você é o exótico aqui.',
+    budget:'R$ 7.000–13.000', bestTime:'Maio–setembro' },
+
+  { flag:'🇸🇮', name:'Eslovênia — Liubliana & Bled', country:'Eslovênia', tagline:'A Suíça barata com castelo no lago.', type:'intl',
+    s: { nature:85, culture:72, food:70, adventure:68, calm:80, budgetMin:2,
+         bubbleTags:['natureza','história','tranquilidade','beleza','cultura','verde'] },
+    why:'Lago Bled com castelo medieval na rocha, a Julian Alps de fundo e uma capital universitária com 250.000 pessoas que tem alma de vila.',
+    experiences:['Lago Bled ao amanhecer: Pletna boat (gôndola eslovena) até a ilha com a campainha','Vintgar Gorge: caminhada sobre passarelas de madeira em cânion de esmeralda','Liubliana de bicicleta: toda a cidade histórica é pedestrianizada'],
+    stay:'Pousadas boutique em Bled ou design hotels em Liubliana',
+    food:['Kranjska klobasa: salsicha defumada de Carniola com chucrute e mostarda','Kremšnita de Bled: bolo de creme que inventaram no Hotel Park em 1953'],
+    tip:'Fácil de combinar com Veneza (2h de trem) ou Viena (4h). Eslovênia cabe em 5 dias e vale muito mais que o esforço.',
+    budget:'R$ 11.000–22.000', bestTime:'Maio–setembro' },
+
+  { flag:'🇵🇱', name:'Polônia — Cracóvia & Mazúria', country:'Polônia', tagline:'História pesada, cervejas boas, preço incrível.', type:'intl',
+    s: { nature:60, culture:88, food:72, adventure:42, calm:65, budgetMin:1,
+         bubbleTags:['história','cultura','gastronomia','barato','arquitetura','europa'] },
+    why:'Cracóvia é a Praga mais bonita que ninguém visita. Mazúria são 2.000 lagos no norte polonês para navegar de vela no verão — pouco conhecido até por europeus.',
+    experiences:['Wawel ao amanhecer: castelo e catedral com tumbas dos reis poloneses','Kazimierz, o bairro judeu: jazz em bares até 4h da manhã por 5 euros','Mazúria de veleiro: arquipélago de lagos conectados por canais, silêncio e pinheiros'],
+    stay:'Apartamentos históricos em Kazimierz ou marinas com veleiros alugados em Mazúria',
+    food:['Żurek: sopa de centeio fermentado com salsicha e ovo cozido — o caldo polonês','Pierogi ruskie com cebola caramelizada — os raviólis que alimentaram a Europa Central'],
+    tip:'Evite o "vodka bar" turístico em Cracóvia e vá ao Zalipie ou Nowa Huta para sentir a Polônia real.',
+    budget:'R$ 7.000–14.000', bestTime:'Maio–setembro' },
+
+  { flag:'🇮🇪', name:'Irlanda — Connemara & Wild Atlantic Way', country:'Irlanda', tagline:'A costa mais dramática da Europa, com pub e stout.', type:'surprise',
+    s: { nature:85, culture:78, food:62, adventure:62, calm:78, budgetMin:2,
+         bubbleTags:['natureza','cultura','ruptura','historia','oceano','verde'] },
+    why:'Connemara: pântanos e lagos de granito sem placa, sem cerca, sem ninguém. Wild Atlantic Way: 2.500km de costa com falésia, gado e pubs com música tradicional.',
+    experiences:['Cliffs of Moher ao amanhecer: 214m de falésias sem proteção sobre o Atlântico','Pub em Doolin na hora da sessão de música tradicional — fiddles e bodhrán','Aran Islands de ferry: Inishmore, cabanas de pedra seca e penhasco de Dún Aonghasa'],
+    stay:'B&Bs em fazendas de Connemara ou cottages na costa do Clare',
+    food:['Irish stew de cordeiro com batata e cebola — exatamente como deve ser','Boxty: panqueca de batata com salmão defumado do Atlântico e cream cheese'],
+    tip:'O tempo muda 4 vezes ao dia — leve capa impermeável mesmo no verão. Alugue carro: o oeste da Irlanda é inacessível sem.',
+    budget:'R$ 13.000–24.000', bestTime:'Maio a setembro' },
+
+  { flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', name:'Escócia — Highlands & Ilhas Hébridas', country:'Reino Unido', tagline:'O cenário que fez Tolkien sonhar com Terra Média.', type:'surprise',
+    s: { nature:90, culture:75, food:60, adventure:72, calm:82, budgetMin:2,
+         bubbleTags:['natureza','ruptura','história','isolamento','paisagem','aventura'] },
+    why:'Glencoe, Isle of Skye e as Hébridas Exteriores — paisagens que parecem ilegais de existir, com whisky local e nenhum turista de cruzeiro.',
+    experiences:['Isle of Skye: Fairy Pools, Old Man of Storr e Quiraing — 3 trilhas, 3 mundos','Glencoe de manhã com neblina: vale que foi palco de massacre e Battle of Culloden','Destilaria no Speyside com degustação de single malt envelhecendo na barrica'],
+    stay:'Crofts (casas de campo escocesas) nas Hébridas ou pequenos hotéis em Skye',
+    food:['Cullen skink: sopa cremosa de defumado de haddock e batata, símbolo da Escócia','Cranachan: mousse de framboesa, whisky, aveia e nata — sobremesa de Burns Night'],
+    tip:'Road trip no sentido anti-horário saindo de Glasgow: Glencoe → Fort William → Skye → Inverness. 7 dias, 800km, memória para a vida toda.',
+    budget:'R$ 14.000–28.000', bestTime:'Maio–agosto' },
+
+  // ── ÁSIA & OCEANO ÍNDICO ────────────────────────────────────────────────────
+  { flag:'🇻🇳', name:'Vietnã — Ha Long & Sapa', country:'Vietnã', tagline:'Um país que sobreviveu a tudo e ainda serve o melhor pho do mundo.', type:'surprise',
+    s: { nature:78, culture:85, food:92, adventure:65, calm:58, budgetMin:1,
+         bubbleTags:['gastronomia','natureza','cultura','história','diferente','ruptura'] },
+    why:'Ha Long Bay com 1.969 ilhas de calcário saindo do mar verde. Sapa com terraços de arroz nas montanhas e tribos do norte. E o pho — o prato mais democrático da Ásia.',
+    experiences:['Cruzeiro de 2 noites em Ha Long Bay em barco de madeira com kayak entre ilhas','Sapa de trekking pelos terraços de arroz com família Black H\'Mong como guia','Hanói antiga: 36 ruas dos artesãos com comida de rua ao amanhecer'],
+    stay:'Junk boat boutique em Ha Long ou homestay numa aldeia próxima a Sapa',
+    food:['Pho bo no caldo que ferveu 12 horas — servido desde as 5h nos mercados','Bun cha de Hanói: carne de porco grelhada com macarrão e folhas de hortelã'],
+    tip:'Vietnã do norte e do sul são países diferentes em temperamento e clima. 12 dias: Hanói → Ha Long → Sapa, ou adicione Hội An no centro.',
+    budget:'R$ 7.000–15.000', bestTime:'Outubro a abril (norte)' },
+
+  { flag:'🇮🇩', name:'Bali — Ubud & Buleleng', country:'Indonésia', tagline:'A ilha onde espiritualidade e beleza dividem o mesmo endereço.', type:'intl',
+    s: { nature:80, culture:90, food:85, adventure:65, calm:72, budgetMin:1,
+         bubbleTags:['cultura','natureza','gastronomia','arte','espiritual','tropical'] },
+    why:'Ubud não é o Bali de Instagram — é templos entre arrozais, artesãos produzindo em frente de casa e uma espiritualidade hinduísta que permeia tudo.',
+    experiences:['Tegalalang: terraços de arroz ao amanhecer antes dos grupos','Tirta Empul: templo de purificação aquática com rituais hindus reais','Surf em Canggu ou Uluwatu — ondas do Índico com pôr do sol de cinema'],
+    stay:'Villas com piscina infinita privativa em Ubud ou villa na falésia em Uluwatu',
+    food:['Babi guling: leitão recheado assado no espeto — o festim balinês por excelência','Nasi goreng às 7h do foodcart da esquina — melhor café da manhã do Sudeste Asiático'],
+    tip:'Evite julho-agosto (alta temporada). Abril-maio ou setembro-outubro: menos gente, mesmos preços de hospedagem.',
+    budget:'R$ 8.000–18.000', bestTime:'Abril–junho e setembro–outubro' },
+
+  { flag:'🇱🇰', name:'Sri Lanka — Kandy & Costa Sul', country:'Sri Lanka', tagline:'A Índia que cabe numa ilha, com chá, elefantes e surf.', type:'surprise',
+    s: { nature:82, culture:88, food:80, adventure:68, calm:68, budgetMin:1,
+         bubbleTags:['natureza','cultura','gastronomia','ruptura','diferente','tropical'] },
+    why:'Sigiriya (rocha-leão com afresco budista a 200m), jardins de chá das Highlands, elefantes selvagens e praias com tartarugas — num país que gasta pouco.',
+    experiences:['Sigiriya ao amanhecer: subida de 1.200 degraus para afrescos de 1.500 anos','Horton Plains: planalto de chá a 2.100m com Fim do Mundo (precipício com névoa)','Safari de elefantes em Minneriya: centenas de elefantes no maior show wild da Ásia'],
+    stay:'Colonial bungalows nos jardins de chá de Nuwara Eliya ou ecolodge em Yala',
+    food:['Hoppers — tigelas de arroz fermentado com ovo estrelado e sambas picantes','Kottu roti: chapa barulhenta de roti picado com frango, ovo e especiarias nas ruas'],
+    tip:'O trem de Ella a Kandy entre os jardins de chá é um dos mais boneiros do mundo. Reserve com antecedência — esgota semanas antes.',
+    budget:'R$ 7.000–16.000', bestTime:'Dezembro a março (costa oeste/sul)' },
+
+  { flag:'🇯🇴', name:'Jordânia — Petra & Wadi Rum', country:'Jordânia', tagline:'Nabateus, romanos e Lawrence da Arábia no mesmo dia.', type:'surprise',
+    s: { nature:72, culture:95, food:78, adventure:75, calm:70, budgetMin:2,
+         bubbleTags:['ruptura','história','arqueologia','deserto','cultura','aventura'] },
+    why:'Petra às 6h da manhã sem ninguém: o Tesouro em silêncio absoluto. Wadi Rum à noite: acampamento beduíno com o deserto de Marte ao redor. Impossível esquecer.',
+    experiences:['Petra ao amanhecer: 2km do Siq até o Tesouro antes dos grupos de cruzeiro','Wadi Rum: acampamento em tendas de luxo nos vales de arenito vermelho','Mar Morto: flutuar na água mais salgada do planeta a -430m de altitude'],
+    stay:'Camps de glamping em Wadi Rum ou hotel boutique em Petra / Aqaba',
+    food:['Mansaf: cordeiro sobre arroz com molho de iogurte seco — o festim nacional','Mezze jordaniano com hummus, mutabbal e fattoush na sacada de Amã'],
+    tip:'Jordan Pass (visa + Petra + 40 atrações) vale muito mais que pagar avulso. Compre online antes de embarcar.',
+    budget:'R$ 10.000–21.000', bestTime:'Março–maio e outubro–novembro' },
+
+  { flag:'🇮🇳', name:'Rajastão, Índia', country:'Índia', tagline:'Palácios, camelos e especiarias num mundo paralelo.', type:'surprise',
+    s: { nature:48, culture:98, food:90, adventure:60, calm:38, budgetMin:1,
+         bubbleTags:['ruptura','cultura','história','gastronomia','arte','diferente'] },
+    why:'Jaipur, Jodhpur, Jaisalmer e Udaipur — cada cidade com uma cor, uma história e um jantar de rooftop sobre um palácio do século XVIII.',
+    experiences:['Jaisalmer: safári de camelo no deserto de Thar com pernoite em campo beduíno','Udaipur: Lake Palace (palácio no meio do lago) ao pôr do sol','Pushkar: mela dos camelos em novembro — uma das feiras mais antigas do mundo'],
+    stay:'Heritage hotels em palácios convertidos — Taj Lake Palace em Udaipur ou Samode Haveli em Jaipur',
+    food:['Dal baati churma: lentilhas com bolinhos de trigo e ghee — a alma do Rajastão','Thali rajastânico: 15 tigelas com curry, pickles e chutneys de cada região'],
+    tip:'Rajastão é melhor com guia local — o contexto histórico multiplica a experiência. Evite maio-junho: calor de 45°C. Outubro-março é o paraíso.',
+    budget:'R$ 8.000–20.000', bestTime:'Outubro a março' },
+
+  // ── ÁFRICA ──────────────────────────────────────────────────────────────────
+  { flag:'🇹🇿', name:'Tanzânia — Serengeti & Zanzibar', country:'Tanzânia', tagline:'A grande migração e o Índico num único roteiro.', type:'surprise',
+    s: { nature:98, culture:65, food:65, adventure:85, calm:72, budgetMin:3,
+         bubbleTags:['natureza','fauna','ruptura','aventura','mar','isolamento'] },
+    why:'A maior migração de animais do planeta — 2 milhões de gnus cruzando o Serengeti. E a 1h de avião, Zanzibar: Índico turquesa com dhows e Stone Town.',
+    experiences:['Serengeti: safari de 3 dias em jeep com os Big Five a metros','Ngorongoro: descer ao interior de um vulcão extinto habitado por 30.000 animais','Zanzibar: mergulho em Mnemba Atoll com tartarugas e polvos finos'],
+    stay:'Tented camps no Serengeti (Singita ou Four Seasons Mobile Camp) e riad em Stone Town',
+    food:['Pilau rice com camarão gigante do Índico — Stone Town à noite no Forodhani Gardens','Urojo: sopa de Zanzibar com batata, manga verde e coentro'],
+    tip:'Migração cruzando o Rio Mara (o clímax): julho-outubro. Ngorongoro e o resto do Serengeti funcionam o ano todo.',
+    budget:'R$ 22.000–50.000', bestTime:'Julho a outubro' },
+
+  { flag:'🇿🇦', name:'África do Sul — Cidade do Cabo & Garden Route', country:'África do Sul', tagline:'O fim do mundo onde dois oceanos se encontram.', type:'intl',
+    s: { nature:88, culture:72, food:85, adventure:75, calm:68, budgetMin:2,
+         bubbleTags:['natureza','gastronomia','vinho','aventura','fauna','cultura'] },
+    why:'Table Mountain, Cabo da Boa Esperança, Stellenbosch com seus vinhos e a Garden Route até o Parque dos Elefantes — num dos países mais bonitos para dirigir.',
+    experiences:['Table Mountain ao pôr do sol com vista para dois oceanos','Stellenbosch: degustação de Chenin Blanc e Pinotage em vinícolas entre montanhas','Garden Route: Tsitsikamma, Knysna e bungee jump de 216m na Bloukrans Bridge'],
+    stay:'Boutique wine estates em Stellenbosch ou beach houses na Garden Route',
+    food:['Braai sul-africano com boerewors, sosaties e milho grelhado no carvão','Bobotie: curry de carne com cobertura de ovo assado — fusão malaia-africana-holandesa'],
+    tip:'Câmbio favorável para brasileiros: rand desvalorizado. É um destino relativamente acessível para o que oferece.',
+    budget:'R$ 10.000–22.000', bestTime:'Outubro a abril' },
+
+  // ── EUROPA (mais opções) ─────────────────────────────────────────────────────
+  { flag:'🇭🇺', name:'Budapeste & Lago Balaton', country:'Hungria', tagline:'Art Nouveau, termas e o maior lago da Europa Central.', type:'intl',
+    s: { nature:55, culture:88, food:78, adventure:35, calm:72, budgetMin:1,
+         bubbleTags:['arquitetura','gastronomia','história','termas','cultura','barato'] },
+    why:'Budapeste tem a arquitetura mais impressionante da Europa Central, banhos termais do século XVI e uma cena gastronômica que triplicou de qualidade em 10 anos.',
+    experiences:['Széchenyi: banho termal de 1913 na neve com xadrez e nata de vaca','Ruin bars no distrito VII: bares em casarões judaicos abandonados, única no mundo','Lago Balaton no verão: cidades de vinho à beira do maior lago de água doce da UE'],
+    stay:'Design hotels no bairro judeu de Budapeste ou pousadas à beira do Balaton',
+    food:['Gulyás: o goulash original, fumegante, com páprica vermelha de Kalocsa','Lángos com tejföl e queijo: fritas de rua húngaras que você vai sonhar depois'],
+    tip:'Budapeste cabe em 4 dias. Balaton em mais 2. Ryanair faz conexão fácil desde Lisboa se vierem pela Europa.',
+    budget:'R$ 8.000–16.000', bestTime:'Maio–setembro' },
+
+  { flag:'🇵🇹', name:'Madeira — a ilha vertical', country:'Portugal', tagline:'Uma ilha que decidiu crescer para cima em vez de para o mar.', type:'intl',
+    s: { nature:90, culture:55, food:78, adventure:72, calm:80, budgetMin:2,
+         bubbleTags:['natureza','verde','gastronomia','tranquilidade','oceano','aventura'] },
+    why:'Levadas (canais de irrigação históricos) cortam a ilha por 2.000km de trilhas entre falésias e selva. O resultado é a ilha mais verde da Europa — e com poncha.',
+    experiences:['Trilha das 25 Fontes pela levada do Paul da Serra','Pico Ruivo: topo da Madeira a 1.862m com nuvens abaixo e Atlântico ao redor','Ponta de São Lourenço: península de rocha pelada com vista dos dois lados da ilha'],
+    stay:'Quintas históricas no interior ou hotéis boutique no Funchal',
+    food:['Espetada madeirense: carne de vaca em espeto de loureiro com sal em brasa','Poncha com aguardente de cana, mel e limão da quinta — o cocktail da ilha'],
+    tip:'Rent a car é obrigatório — a ilha tem estradas em espiral mas a liberdade é total. Funchal é a base, mas dormir no norte muda a experiência.',
+    budget:'R$ 10.000–20.000', bestTime:'Abril–outubro' },
+
+  { flag:'🇪🇸', name:'Ilhas Canárias — La Palma & La Gomera', country:'Espanha', tagline:'Vulcões, florestas de laurissílva e praias negras.', type:'surprise',
+    s: { nature:88, culture:45, food:68, adventure:75, calm:82, budgetMin:2,
+         bubbleTags:['natureza','vulcão','isolamento','verde','ruptura','atlântico'] },
+    why:'La Palma é a ilha com menos turismo das Canárias e o céu mais estrelado da Europa (Reserva Starlight). La Gomera tem a floresta laurissílva com 12 milhões de anos.',
+    experiences:['Caldera de Taburiente: bacia vulcânica de 8km onde nascem as nuvens','Garajonay: caminhar pela laurissílva com 12 milhões de anos de história evolutiva','Observatório Roque de los Muchachos: telescópios no topo da nuvem'],
+    stay:'Casas rurais nas aldeias do interior ou hotéis boutique em Santa Cruz de La Palma',
+    food:['Papas arrugadas com mojo verde — as batatas canárias com molho de coentro','Vieja (peixe local) assada com mojo vermelho de pimenta seca das ilhas'],
+    tip:'La Palma e La Gomera têm 2 voos por semana de São Paulo. Fácil combinar as duas numa semana com ferry inter-ilhas.',
+    budget:'R$ 9.000–18.000', bestTime:'Todo o ano (clima quase constante)' },
+
+  { flag:'🇫🇷', name:'Provença — Luberon & Alpilles', country:'França', tagline:'O campo francês que todos deveriam viver uma vez.', type:'intl',
+    s: { nature:68, culture:82, food:95, adventure:32, calm:90, budgetMin:3,
+         bubbleTags:['gastronomia','vinho','tranquilidade','história','arte','campo'] },
+    why:'Lavanda em julho em Valensole, mercados de domingo em L\'Isle-sur-la-Sorgue, trufa em novembro e vinho do Luberon que custa 8 euros na adega — a França de verdade.',
+    experiences:['Lavanda em flor em Valensole: campos roxos de horizonte a horizonte em julho','Mercado de domingo em L\'Isle-sur-la-Sorgue: melhor mercado de antiquários da França','Baux-de-Provence: vila medieval no topo de rocha com vista dos Alpilles'],
+    stay:'Bastides (casas de campo provençais) com piscina no Luberon',
+    food:['Bouillabaisse em Marseille — a receita original, com rouille e croutons','Tapenade, pissaladière e socca: a culinária nizzarda de rua'],
+    tip:'Julho é a lavanda e o pico. Maio–junho ou setembro–outubro: sem multidão, com os campos ainda belos.',
+    budget:'R$ 18.000–38.000', bestTime:'Maio a outubro' },
+];
+
+// ── SCORING ALGORITHM ─────────────────────────────────────────────────────────
+function scoreAndRankDests(rp, ap) {
+  const ra = rp.answers || {};
+  const aa = ap.answers || {};
+
+  // Spectrum answers (0–100)
+  const avgNature  = ((parseInt(ra.nature_city) || 50) + (parseInt(aa.nature_city) || 50)) / 2;
+  const avgUnknown = ((parseInt(ra.unknown)     || 50) + (parseInt(aa.unknown)     || 50)) / 2;
+
+  // Budget: index 0=barato, 1=médio, 2=confortável, 3=premium
+  const minBudget = Math.min(
+    ra.budget !== undefined ? parseInt(ra.budget) : 2,
+    aa.budget !== undefined ? parseInt(aa.budget) : 2
+  );
+
+  // Bubble answer → tags
+  const bubbleMap = {
+    0: ['deserto','natureza','isolamento','aventura'],
+    1: ['ruptura','cultura','diferente','história'],
+    2: ['isolamento','campo','tranquilidade','autêntico'],
+    3: ['natureza','brasil','desconhecido','aventura'],
+  };
+  const allBubbleTags = [
+    ...(bubbleMap[ra.bubble] || []),
+    ...(bubbleMap[aa.bubble] || []),
+  ];
+
+  // Memory → booster function per destination
+  const memBoost = (d, idx) => {
+    if (idx === 0) return d.s.nature   > 75 ? 10 : 0;   // "lugar mais bonito"
+    if (idx === 1) return d.s.culture  > 75 ? 10 : 0;   // "aprendi algo"
+    if (idx === 2) return 4;                              // "conexão" — neutro positivo
+    if (idx === 3) return d.s.bubbleTags.includes('ruptura') ? 14 : -4; // "saí da bolha"
+    return 0;
+  };
+
+  // Feel → booster function
+  const feelBoost = (d, idx) => {
+    if (idx === 0) return d.s.nature  > 72 ? 9 : 0;   // pequeno diante do imenso
+    if (idx === 1) return d.s.calm    > 70 ? 7 : 0;   // em casa no desconhecido
+    if (idx === 2) return d.s.culture > 60 ? 7 : 0;   // curioso
+    if (idx === 3) return d.s.calm    > 78 ? 9 : 0;   // desacelerado
+    if (idx === 4) return d.s.food    > 70 ? 6 : 4;   // celebrando
+    if (idx === 5) return d.s.calm    > 82 ? 9 : 0;   // silêncio e presença
+    return 0;
+  };
+
+  // Discovery → booster function
+  const discBoost = (d, idx) => {
+    if (idx === 0) return d.s.food      > 78 ? 9 : 0;  // sabores
+    if (idx === 1) return d.s.culture   > 82 ? 9 : 0;  // culturas
+    if (idx === 2) return d.s.nature    > 78 ? 9 : 0;  // paisagens
+    if (idx === 3) return 5;                             // conexão casal
+    if (idx === 4) return d.s.adventure > 70 ? 9 : 0;  // surpresa
+    if (idx === 5) return d.s.culture   > 68 ? 7 : 0;  // profundidade
+    return 0;
+  };
+
+  const scored = DEST_POOL.map(d => {
+    let score = 50;
+
+    // Budget gate
+    if (d.s.budgetMin > minBudget + 1) score -= 35;
+    else if (d.s.budgetMin <= minBudget) score += 12;
+
+    // Nature vs city alignment
+    const natureDiff = Math.abs(avgNature - d.s.nature);
+    score += Math.round((100 - natureDiff) * 0.20);
+
+    // Bubble tag matches
+    const tagMatches = allBubbleTags.filter(t => d.s.bubbleTags.includes(t)).length;
+    score += tagMatches * 8;
+
+    // Memory (both profiles)
+    score += memBoost(d, ra.memory) + memBoost(d, aa.memory);
+
+    // Feel (both profiles)
+    score += feelBoost(d, ra.feel) + feelBoost(d, aa.feel);
+
+    // Discovery (both profiles)
+    score += discBoost(d, ra.discovery) + discBoost(d, aa.discovery);
+
+    // Food centrality
+    if ((ra.food === 0 || aa.food === 0) && d.s.food > 82) score += 12;  // food as center
+    if ((ra.food === 3 || aa.food === 3) && d.s.food > 78) score += 9;   // local food
+
+    // Adventure / spontaneity
+    if (avgUnknown > 65 && d.s.adventure > 70) score += 9;
+    if (avgUnknown < 35 && d.s.calm      > 80) score += 7; // likes planning → calm
+
+    // Pace preference
+    if ((ra.pace === 3 || aa.pace === 3) && d.s.calm > 85) score += 8;   // rest-focused
+    if ((ra.pace === 0 || aa.pace === 0) && d.s.adventure > 75) score += 6; // high energy
+
+    // Deterministic tie-breaking (varies per profile combo)
+    const seed = Object.values(ra).concat(Object.values(aa))
+      .reduce((a, b) => a + (typeof b === 'number' ? b : 0), 0);
+    score += ((seed * 31 + d.name.charCodeAt(0)) % 9);
+
+    return { ...d, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+
+  // Guarantee diversity: ≥2 BR, ≥1 surprise, ≤2 European intl
+  const used = new Set();
+  const result = [];
+  const pick = (arr) => {
+    const d = arr.find(x => !used.has(x.name));
+    if (d) { used.add(d.name); result.push(d); }
+  };
+
+  const byBr      = scored.filter(d => d.type === 'br');
+  const bySurprise = scored.filter(d => d.type === 'surprise');
+
+  pick(byBr);       // guaranteed BR #1
+  pick(byBr);       // guaranteed BR #2
+  pick(bySurprise); // guaranteed surprise
+
+  while (result.length < 6) {
+    const next = scored.find(d => !used.has(d.name));
+    if (!next) break;
+    used.add(next.name);
+    result.push(next);
+  }
+
+  result.sort((a, b) => b.score - a.score);
+  return result;
+}
+
+function renderFallback(showBanner, customMsg) {
+  document.getElementById('dest-loading').style.display = 'none';
+  const p = getProfiles();
+  const dests = (p.rafael && p.ana)
+    ? scoreAndRankDests(p.rafael, p.ana)
+    : DEST_POOL.slice(0, 6);
+
+  renderCards(dests);
+
+  if (showBanner) {
+    const grid = document.getElementById('destinations-grid');
+    const banner = document.createElement('div');
+    banner.className = 'fallback-banner';
+    const msg = customMsg || 'Sugestões personalizadas com base no perfil de vocês.';
+    banner.innerHTML = `${msg}&nbsp;&nbsp;<a onclick="const p=getProfiles(); showKeyPrompt(p.rafael,p.ana); document.getElementById('destinations-grid').style.display='none'" style="font-size:0.78rem;opacity:0.7">Ativar IA →</a>`;
+    grid.insertBefore(banner, grid.firstChild);
+  }
+}
+
+</script>
+</body>
+</html>
